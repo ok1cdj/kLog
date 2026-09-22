@@ -7,7 +7,9 @@ import pkg from './package.json'
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/kLog/' : '/',
   define: {
-    __SW_VERSION__: JSON.stringify(pkg.version),
+    // Unique per build so every deploy = a new SW cache name = old cache purged.
+    // (Relying on a manual package.json bump is too easy to forget.)
+    __SW_VERSION__: JSON.stringify(`${pkg.version}.${Date.now()}`),
   },
   build: {
     rollupOptions: {

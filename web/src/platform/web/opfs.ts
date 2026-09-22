@@ -30,6 +30,9 @@ export class WebPlatform implements KLogPlatform {
   private persistRequested = false
 
   constructor() {
+    // Ask for persistent storage as early as possible. On an installed PWA the
+    // browser grants it without a prompt; before install it simply returns false.
+    this.requestPersist()
     this.worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
     this.worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
       const resp = e.data
