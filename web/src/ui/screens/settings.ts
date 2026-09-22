@@ -70,7 +70,13 @@ export class SettingsScreen implements Screen {
     wrap.append(
       el('span', 'field-label', 'Úložiště'),
       el('div', undefined, STORAGE_LABEL[platformKind()]),
-      el('div', 'about', `Trvalé (persist): ${persisted ? 'ano' : 'ne'}`),
+      el(
+        'div',
+        'about',
+        persisted
+          ? 'Trvalé (persist): ano'
+          : 'Trvalé (persist): ne — zapne se po přidání na plochu a prvním QSO (hlavně kvůli iPadu)',
+      ),
     )
     return wrap
   }

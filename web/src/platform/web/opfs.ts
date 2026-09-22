@@ -72,6 +72,9 @@ export class WebPlatform implements KLogPlatform {
   }
 
   async createLog(meta: LogMeta): Promise<string> {
+    // Creating a log is also a user gesture — request persistence here too so the
+    // grant can happen at the earliest storage write (ch. 13).
+    this.requestPersist()
     const id = this.newId(meta.name)
     await this.call<void>({ op: 'createHeader', logId: id, content: writeLogHeader(meta) })
     return id
