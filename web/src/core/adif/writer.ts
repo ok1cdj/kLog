@@ -50,6 +50,8 @@ export function writeQso(qso: Qso): string {
   if (qso.myRef !== undefined)
     for (const [n, v] of refToFields(qso.myRef, true)) parts.push(writeField(n, v))
   if (qso.name !== undefined) parts.push(writeField(F.NAME, qso.name))
+  if (qso.serial !== undefined) parts.push(writeField(F.SRX_STRING, qso.serial))
+  if (qso.sentSerial !== undefined) parts.push(writeField(F.STX_STRING, qso.sentSerial))
 
   return parts.join(' ') + ' <EOR>'
 }

@@ -56,6 +56,19 @@ describe('VKV contest exchange (ch. 9 #7)', () => {
     expect(r.partial.serial).toBe('002')
   })
 
+  it('space-separated exchange 59 002 JN99 → report + serial + locator', () => {
+    const r = parseLine('OK1ABC 59 002 JN99', { band: '2m', mode: 'SSB' }, {}, PROFILES.vkv)
+    expect(r.partial.reportRcvd).toBe('59')
+    expect(r.partial.serial).toBe('002')
+    expect(r.partial.grid).toBe('JN99')
+  })
+
+  it('space-separated on CW: 599 002 → report 599 + serial 002', () => {
+    const r = parseLine('OK1ABC 599 002', { band: '2m', mode: 'CW' }, {}, PROFILES.vkv)
+    expect(r.partial.reportRcvd).toBe('599')
+    expect(r.partial.serial).toBe('002')
+  })
+
   it('uses the mode changed earlier on the same line', () => {
     const r = parseLine('cw OK1ABC 599002', { band: '2m', mode: 'SSB' }, {}, PROFILES.vkv)
     expect(r.partial.reportRcvd).toBe('599')

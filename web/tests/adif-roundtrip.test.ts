@@ -61,6 +61,18 @@ describe('parse → ADIF → parse roundtrip (ch. 13, 17)', () => {
     expect(roundtrip(qso)).toEqual(qso)
   })
 
+  it('VKV contest Qso with sent + received serials', () => {
+    const qso: Qso = {
+      ...BASE,
+      call: 'OK2XYZ',
+      signal: { band: '2m', mode: 'SSB' },
+      grid: 'JN99',
+      serial: '002', // received (SRX_STRING) — leading zero preserved
+      sentSerial: '015', // sent (STX_STRING)
+    }
+    expect(roundtrip(qso)).toEqual(qso)
+  })
+
   it('satellite-shaped Qso with BAND_RX (ch. 19.1)', () => {
     const qso: Qso = {
       ...BASE,

@@ -40,7 +40,8 @@ export interface Qso {
   readonly theirRef?: AwardReference // S2S reference of worked station — Aktivace (ch. 9.4)
   readonly myRef?: AwardReference // my activated reference — Aktivace (from LogMeta)
   readonly name?: string // ADIF NAME — Obecný (ch. 9 #9)
-  readonly serial?: string // VKV závod only; typed now, never populated in phase 1 (ch. 7)
+  readonly serial?: string // received serial (ADIF SRX_STRING) — VKV závod
+  readonly sentSerial?: string // sent serial (ADIF STX_STRING) — VKV závod, auto-incremented
 }
 
 export type ProfileId = 'vkv' | 'aktivace' | 'obecny'

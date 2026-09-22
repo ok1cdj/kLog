@@ -51,15 +51,22 @@ export function parseLine(
         next.reportSent = cls.value
         break
       case 'number': {
-        // ch. 9 #7. In a contest the exchange is report+serial in one token
-        // (59002 → 59 + 002; on CW 599002 → 599 + 002). The report length is the
-        // mode's RST width — 3 for CW, 2 otherwise — since it is the same QSO.
+        // ch. 9 #7. VKV contest exchange is report + serial. It may be one token
+        // (59002 → 59 + 002; on CW 599002 → 599 + 002) or two (59 002). The report
+        // width is the mode's RST width (3 for CW, 2 otherwise) — same QSO.
         if (profile.serialAfterCall) {
           const reportLen = nextSticky.mode === 'CW' ? 3 : 2
-          if (cls.value.length > reportLen) {
-            next.reportRcvd = cls.value.slice(0, reportLen)
-            next.serial = cls.value.slice(reportLen)
+          if (next.reportRcvd === undefined) {
+            if (cls.value.length > reportLen) {
+              // combined token: split report + serial
+              next.reportRcvd = cls.value.slice(0, reportLen)
+              next.serial = cls.value.slice(reportLen)
+            } else {
+              // a short first number is the report (serial follows in a later token)
+              next.reportRcvd = cls.value
+            }
           } else {
+            // report already captured → this number is the serial
             next.serial = cls.value
           }
         } else {

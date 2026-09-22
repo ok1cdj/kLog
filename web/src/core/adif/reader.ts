@@ -50,6 +50,10 @@ function toQso(r: Record<string, string>): Qso {
   if (myRef) qso.myRef = myRef
   const name = r[F.NAME]
   if (name !== undefined) qso.name = name
+  const serial = r[F.SRX_STRING]
+  if (serial !== undefined) qso.serial = serial
+  const sentSerial = r[F.STX_STRING]
+  if (sentSerial !== undefined) qso.sentSerial = sentSerial
   return qso
 }
 

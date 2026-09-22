@@ -24,6 +24,8 @@ export const F = {
   SIG_INFO: 'SIG_INFO',
   MY_SIG: 'MY_SIG',
   MY_SIG_INFO: 'MY_SIG_INFO',
+  SRX_STRING: 'SRX_STRING', // received serial (string preserves leading zeros)
+  STX_STRING: 'STX_STRING', // sent serial
   PROGRAMID: 'PROGRAMID',
   ADIF_VER: 'ADIF_VER',
 } as const

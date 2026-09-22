@@ -190,6 +190,16 @@ body {
   color: var(--ghost);
   border-color: var(--ghost);
 }
+/* Already-worked call (dupe on current band+mode) — inverse, stands out. */
+.suggest--worked {
+  background: var(--fg);
+  color: var(--bg);
+}
+/* VKV next sent serial in the header. */
+.hdr-tx {
+  padding: 0 0.3rem;
+  border: var(--border-w) solid var(--fg);
+}
 
 /* --- crash-journal recovery banner ---------------------------------------- */
 

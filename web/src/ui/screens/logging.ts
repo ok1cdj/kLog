@@ -34,6 +34,7 @@ export interface LoggingNav {
 }
 
 const pad2 = (n: number): string => (n < 10 ? '0' + n : String(n))
+const pad3 = (n: number): string => String(n).padStart(3, '0')
 const hhmm = (d: Date): string => `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`
 
 export class LoggingScreen implements Screen {
@@ -140,10 +141,14 @@ export class LoggingScreen implements Screen {
     if (r.clearInput) this.line = ''
 
     if (r.committed) {
-      await this.platform.appendQso(this.logId, writeQso(r.committed))
+      // VKV contest: stamp the auto-incremented sent serial (STX) at commit time.
+      const committed = PROFILES[this.meta.profile].serialAfterCall
+        ? { ...r.committed, sentSerial: pad3(this.qsos.length + 1) }
+        : r.committed
+      await this.platform.appendQso(this.logId, writeQso(committed))
       await this.platform.clearJournal(this.logId)
-      this.qsos.push(r.committed)
-      this.db.add(r.committed)
+      this.qsos.push(committed)
+      this.db.add(committed)
       this.banner.hidden = true
     } else if (this.state.hasStarted && this.state.partial.call) {
       await this.platform.writeJournal(this.logId, serialize(this.state.partial))
@@ -192,6 +197,10 @@ export class LoggingScreen implements Screen {
     const time = this.state.partial.timeOn ? hhmm(this.state.partial.timeOn) : '--:--'
     const mid = el('div', 'hdr-mid')
     mid.append(el('b', undefined, `${s.band} ${s.mode}`), callChip(this.state.partial.call), el('b', undefined, `${time}z`))
+    // VKV: show the next sent serial so the operator knows what to give out.
+    if (PROFILES[this.meta.profile].serialAfterCall) {
+      mid.append(el('b', 'hdr-tx', `TX ${pad3(this.qsos.length + 1)}`))
+    }
     this.hdr.replaceChildren(
       button('‹ Logy', () => void this.close(), 'hdr-nav'),
       mid,
@@ -227,7 +236,13 @@ export class LoggingScreen implements Screen {
     if (frag.length >= 2) {
       const hits = this.db.suggest(frag).slice(0, 3)
       if (hits.length > 0) {
-        this.stripEl.replaceChildren(...hits.map((call) => this.suggestButton(call, () => this.fillCall(call))))
+        this.stripEl.replaceChildren(
+          ...hits.map((call) => {
+            // Already worked on this band+mode → mark it (inverse), so a dupe stands out.
+            const worked = isDupe(this.qsos, call, this.state.sticky.band, this.state.sticky.mode)
+            return this.suggestButton(call, () => this.fillCall(call), worked ? 'suggest suggest--worked' : 'suggest')
+          }),
+        )
         return
       }
     }

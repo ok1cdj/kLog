@@ -57,6 +57,7 @@ export class QsoEditScreen implements Screen {
     const rcvd = fieldRow('RST přijatý', orig.report.rcvd)
     const grid = fieldRow('Locator', orig.grid ?? '')
     const name = fieldRow('Jméno', orig.name ?? '')
+    const serial = fieldRow('Poř. číslo přijaté', orig.serial ?? '')
     const ref = fieldRow('Reference (protistanice)', orig.theirRef?.value ?? '')
     const date = fieldRow('Datum UTC (RRRRMMDD)', dateStr(orig.timeOn))
     const time = fieldRow('Čas UTC (HHMM)', timeStr(orig.timeOn))
@@ -77,6 +78,7 @@ export class QsoEditScreen implements Screen {
       rcvd.row,
       grid.row,
       name.row,
+      serial.row,
       ref.row,
       date.row,
       time.row,
@@ -106,7 +108,9 @@ export class QsoEditScreen implements Screen {
       const r = parseReferenceInput(ref.input.value)
       if (r) q.theirRef = r
       if (orig.myRef !== undefined) q.myRef = orig.myRef
-      if (orig.serial !== undefined) q.serial = orig.serial
+      const sn = serial.input.value.trim()
+      if (sn) q.serial = sn
+      if (orig.sentSerial !== undefined) q.sentSerial = orig.sentSerial // TX serial is auto, not edited
       return q
     }
 
