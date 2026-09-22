@@ -1,0 +1,10 @@
+{
+  "//": "Main-thread browser code: platform shim (except the OPFS worker) + playground. DOM lib. Pulls in src/core via imports (core stays DOM-free, compiles fine here too).",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"]
+  },
+  "include": ["src/main.ts", "src/ui", "src/theme", "src/platform", "playground", "vite.config.ts"],
+  "exclude": ["src/platform/web/worker.ts"]
+}

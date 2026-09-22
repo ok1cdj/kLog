@@ -1,0 +1,9 @@
+{
+  "//": "Core project: pure logic, NO DOM lib — an accidental document/window in src/core fails to compile. This is the default `tsc --noEmit` target.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["vitest/globals"]
+  },
+  "include": ["src/core", "tests"]
+}

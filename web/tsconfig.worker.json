@@ -1,0 +1,8 @@
+{
+  "//": "The OPFS worker only. WebWorker lib (FileSystemSyncAccessHandle + worker globals live here, and conflict with DOM — hence a separate program).",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "WebWorker", "WebWorker.AsyncIterable"]
+  },
+  "include": ["src/platform/web/worker.ts", "src/platform/web/protocol.ts"]
+}

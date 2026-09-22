@@ -1,0 +1,8 @@
+{
+  "//": "The service worker only. WebWorker lib for ServiceWorkerGlobalScope / FetchEvent. Separate program so its `self` declaration doesn't clash with the OPFS worker's.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "WebWorker"]
+  },
+  "include": ["src/sw.ts"]
+}

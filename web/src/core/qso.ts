@@ -1,0 +1,49 @@
+// Assemble a committed Qso from the accumulator + sticky + log header (ch. 11 commit).
+
+import type { LogMeta, PartialQso, Qso, Signal, StickyState } from './model'
+
+/** Apply an HHMM manual time override (ch. 11) onto a base UTC instant. */
+function applyTimeOverride(base: Date, hhmm: string): Date {
+  const h = Number(hhmm.slice(0, 2))
+  const m = Number(hhmm.slice(2, 4))
+  const d = new Date(base.getTime())
+  d.setUTCHours(h, m, 0, 0)
+  return d
+}
+
+/**
+ * Build a committable Qso, or null when there is no callsign (ch. 11: commit
+ * requires only the callsign). Reports default from the log header; time,
+ * signal and my-* come from the accumulator/sticky/meta.
+ *
+ * Precondition: `partial.timeOn` is set — the reducer stamps it at the first
+ * keystroke (ch. 11). Without it there is nothing to commit.
+ */
+export function buildQso(partial: PartialQso, sticky: StickyState, meta: LogMeta): Qso | null {
+  if (!partial.call || !partial.timeOn) return null
+
+  const timeOn = partial.timeOverride ? applyTimeOverride(partial.timeOn, partial.timeOverride) : partial.timeOn
+
+  const signal: Signal = { band: sticky.band, mode: sticky.mode }
+  if (sticky.bandRx !== undefined) (signal as { bandRx?: string }).bandRx = sticky.bandRx
+  if (sticky.modeRx !== undefined) (signal as { modeRx?: string }).modeRx = sticky.modeRx
+
+  const qso: { -readonly [K in keyof Qso]: Qso[K] } = {
+    call: partial.call,
+    timeOn,
+    signal,
+    report: {
+      sent: partial.reportSent ?? meta.defaultReport,
+      rcvd: partial.reportRcvd ?? meta.defaultReport,
+    },
+    stationCall: meta.myCall,
+    myGrid: meta.myGrid,
+  }
+  if (partial.grid !== undefined) qso.grid = partial.grid
+  if (partial.theirRef !== undefined) qso.theirRef = partial.theirRef
+  if (meta.myRef !== undefined) qso.myRef = meta.myRef
+  if (partial.name !== undefined) qso.name = partial.name
+  if (partial.serial !== undefined) qso.serial = partial.serial
+
+  return qso
+}

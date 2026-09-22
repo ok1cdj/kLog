@@ -1,0 +1,53 @@
+/* Design tokens (ch. 3). ONE set of variables; the two display modes differ only
+   in their values, switched by data-display on <html>. Components never branch on
+   the mode — they only read these tokens. */
+
+:root {
+  /* Defaults = standard, light. */
+  --fg: #1a1a1a;
+  --bg: #ffffff;
+  --surface: #f6f6f6; /* subtle raised fill (standard only) */
+  --muted: #8a8a8a; /* secondary text (labels, empty states) */
+  --ghost: #8a8a8a; /* the single grey reserved for prefilled suggestions (ch. 3) */
+  --line: #cfcfcf; /* subtle separators (standard) */
+  --accent: #1a1a1a;
+  --danger: #b00020;
+
+  --border-w: 1px;
+  --radius: 5px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --transition: 100ms; /* ch. 3: 100 ms on state changes (standard) */
+}
+
+/* Standard, dark — respects the OS preference (ch. 3). E-ink ignores it. */
+@media (prefers-color-scheme: dark) {
+  :root[data-display='standard'] {
+    --fg: #e8e8e8;
+    --bg: #131313;
+    --surface: #1f1f1f;
+    --muted: #8a8a8a;
+    --line: #3a3a3a;
+    --accent: #e8e8e8;
+    --danger: #ff6b6b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* E-ink: pure black on white, no dark mode, hard 2px borders, 0 rounding, no
+   shadows, no transitions, no grey fills except the one grey for prefilled
+   suggestions (--muted). (ch. 3, 16) */
+:root[data-display='eink'] {
+  --fg: #000000;
+  --bg: #ffffff;
+  --surface: #ffffff; /* no grey fills */
+  --muted: #000000; /* e-ink: only black/white for text (ch. 3) */
+  --ghost: #6f6f6f; /* the ONE allowed grey — prefilled suggestions only */
+  --line: #000000; /* contrast borders instead of colour */
+  --accent: #000000;
+  --danger: #000000;
+
+  --border-w: 2px;
+  --radius: 0;
+  --shadow: none;
+  --transition: 0ms;
+}

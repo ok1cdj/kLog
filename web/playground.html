@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>kLog — ladička parseru (F1.1)</title>
+    <style>
+      :root {
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 760px;
+        margin: 1.5rem auto;
+        padding: 0 1rem;
+        color: #111;
+      }
+      h1 { font-size: 1.1rem; margin: 0 0 .25rem; }
+      .note { color: #666; font-size: .8rem; margin: 0 0 1rem; }
+      .bar {
+        display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+        padding: .5rem .75rem; border: 2px solid #111; margin-bottom: .75rem;
+        font-family: var(--mono); font-size: .9rem;
+      }
+      .bar b { font-weight: 600; }
+      .banner {
+        border: 2px solid #b8860b; background: #fffbe6; padding: .5rem .75rem;
+        margin-bottom: .75rem; font-size: .85rem; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
+      }
+      button { font: inherit; font-size: .8rem; padding: .25rem .6rem; border: 1px solid #111; background: #fff; cursor: pointer; }
+      button:active { background: #111; color: #fff; }
+      label { font-size: .85rem; }
+      #line {
+        width: 100%; font-family: var(--mono); font-size: 1.4rem;
+        padding: .5rem .6rem; border: 2px solid #111; text-transform: uppercase;
+      }
+      .preview { min-height: 2.2rem; margin: .5rem 0; display: flex; gap: .35rem; flex-wrap: wrap; }
+      .tok {
+        font-family: var(--mono); font-size: .95rem; padding: .15rem .45rem;
+        border: 1px solid #111; border-radius: 3px; white-space: nowrap;
+      }
+      .tok small { display: block; font-size: .6rem; text-transform: uppercase; opacity: .7; }
+      .tok.unknown { text-decoration: line-through; color: #b00; border-color: #b00; }
+      .t-band { background: #e3f2fd; } .t-mode { background: #e8f5e9; }
+      .t-time { background: #fff3e0; } .t-reference { background: #f3e5f5; }
+      .t-call { background: #fffde7; font-weight: 700; }
+      .t-reportRcvd, .t-reportSent { background: #e0f7fa; }
+      .t-number { background: #fce4ec; } .t-locator { background: #ede7f6; }
+      .t-name { background: #f1f8e9; }
+      pre { font-family: var(--mono); font-size: .8rem; background: #f6f6f6; padding: .5rem .6rem; overflow-x: auto; margin: .25rem 0; }
+      #log { list-style: none; padding: 0; margin: 0; }
+      #log li { font-family: var(--mono); font-size: .78rem; padding: .3rem .5rem; border-bottom: 1px solid #ddd; word-break: break-all; }
+      h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; color: #555; margin: 1.2rem 0 .3rem; }
+      .hint { color: #666; font-size: .78rem; }
+      kbd { font-family: var(--mono); background: #111; color: #fff; padding: 0 .3rem; border-radius: 3px; font-size: .72rem; }
+    </style>
+  </head>
+  <body>
+    <h1>kLog — ladička parseru</h1>
+    <p class="note">
+      Throwaway harness pro F1.1 (spec ch. 5). Není to logovací obrazovka — jen fyzická klávesnice
+      napojená přímo na <code>core/</code>. Žádné ukládání, žádná mřížka.
+    </p>
+
+    <div class="bar">
+      <span>sticky: <b id="sticky">—</b></span>
+      <span>moje: <b id="mine">—</b></span>
+      <span>QSO: <b id="count">0</b></span>
+      <span>úložiště: <b id="pkind">—</b></span>
+    </div>
+
+    <div class="bar">
+      <label>log:
+        <select id="logs"></select>
+      </label>
+      <label>profil:
+        <select id="profile">
+          <option value="aktivace">Aktivace (SOTA/POTA/WWFF)</option>
+          <option value="obecny">Obecný</option>
+          <option value="vkv">VKV závod</option>
+        </select>
+      </label>
+      <button id="newlog" type="button">+ nový log</button>
+      <button id="export" type="button">export .adi</button>
+    </div>
+
+    <div class="banner" id="journal" hidden>
+      Nalezeno rozepsané QSO z minula: <b id="journal-text"></b>
+      <button id="recover" type="button">obnovit</button>
+      <button id="discard" type="button">zahodit</button>
+    </div>
+
+    <input id="line" autocomplete="off" autocapitalize="characters" spellcheck="false"
+           placeholder="např.  40m ssb  →  OK1ABC 55 JN79US  (T56 = vyslaný report)" autofocus />
+    <div class="preview" id="preview"></div>
+    <p class="hint">
+      <kbd>Enter</kbd> s obsahem = přiklop k QSO a vyprázdni řádek ·
+      <kbd>Enter</kbd> na prázdném = zapiš QSO. Např. <code>OK1ABC ⏎ JN79US ⏎ ⏎</code>
+    </p>
+
+    <h2>rozepsané QSO (partial)</h2>
+    <pre id="partial">{}</pre>
+
+    <h2>zapsaná QSO (ADIF)</h2>
+    <ul id="log"></ul>
+
+    <script type="module" src="./playground/main.ts"></script>
+  </body>
+</html>
