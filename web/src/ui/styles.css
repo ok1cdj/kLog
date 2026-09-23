@@ -41,6 +41,11 @@ body {
   min-width: 0;
   overflow: hidden; /* a wide header can never widen the grid / push the keyboard off */
   display: grid;
+  /* Pin the single column to the viewport. Without this the implicit column is
+     `auto` and sizes to its max-content (the header's nowrap text / the keyboard's
+     max-width), overflowing a narrow phone and clipping the right nav button and
+     the 6th key column. minmax(0,1fr) fills exactly the container, never wider. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto auto 1fr; /* header · input · preview · strip · keyboard */
   gap: 4px;
   padding: 4px;
