@@ -11,6 +11,7 @@ html {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   height: 100%;
+  overflow: hidden; /* the app fills the viewport; no page-level scroll in any direction */
 }
 body {
   margin: 0;
@@ -28,10 +29,9 @@ body {
      scrolling (dvh/vh can report taller than the visible area). */
   height: 100vh;
   height: 100svh;
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
-  /* Keep content out of notch / rounded-corner areas (0 on the Kompakt). */
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
 }
 
 /* The logging screen owns the portrait band layout (ch. 4). */
