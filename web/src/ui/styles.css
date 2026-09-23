@@ -396,13 +396,14 @@ body {
   flex-wrap: wrap;
 }
 
-/* Satellite picker (New Log): on-brand tiles instead of a native <select>. */
-.satgrid {
+/* Tile picker (New Log): on-brand tiles instead of a native <select> — used for
+   the profile and the satellite. */
+.tilegrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
 }
-.satgrid-tile {
+.tile {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -417,15 +418,15 @@ body {
   cursor: pointer;
   transition: background var(--transition), color var(--transition);
 }
-.satgrid-tile--sel {
+.tile--sel {
   background: var(--fg);
   color: var(--bg);
 }
-.satgrid-name {
+.tile-title {
   font-weight: 700;
   font-size: 1rem;
 }
-.satgrid-band {
+.tile-sub {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8rem;
   opacity: 0.85;

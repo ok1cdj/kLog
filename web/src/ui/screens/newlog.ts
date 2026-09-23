@@ -25,42 +25,61 @@ export interface NewLogNav {
   cancel(): void
 }
 
-const PROFILE_OPTIONS = (): ReadonlyArray<readonly [ProfileId, string]> => [
-  ['aktivace', t('newlog.profileAktivace')],
-  ['obecny', t('newlog.profileObecny')],
-  ['vkv', t('newlog.profileVkv')],
-  ['sat', t('newlog.profileSat')],
-]
 const BAND_OPTIONS = BANDS.map((b) => [b, b] as const)
 const MODE_OPTIONS = MODES.map((m) => [m, m] as const)
 
+interface Tile {
+  readonly value: string
+  readonly title: string
+  readonly sub?: string
+}
+
+// The four log profiles (ch. 8). Aktivace carries a sub-line naming its schemes.
+const PROFILE_TILES = (): readonly Tile[] => [
+  { value: 'aktivace', title: t('newlog.profileAktivace'), sub: t('newlog.profileAktivaceSub') },
+  { value: 'obecny', title: t('newlog.profileObecny') },
+  { value: 'vkv', title: t('newlog.profileVkv') },
+  { value: 'sat', title: t('newlog.profileSat') },
+]
+
+// Each satellite tile shows the bird, "FM" for repeaters, and uplink↑/downlink↓.
+const SAT_TILES: readonly Tile[] = SATELLITES.map((s) => ({
+  value: s.label,
+  title: s.fm ? `${s.label} FM` : s.label,
+  sub: `${s.up}↑${s.down}↓`,
+}))
+
 /**
- * Satellite picker: an on-brand grid of tiles (bird + uplink↑/downlink↓, "FM" for
- * repeater birds) instead of a native <select> — one tap, no full-screen OS dialog,
- * and the bands are visible while choosing. `value()` returns the selected label.
+ * On-brand tile picker: a grid of tappable tiles instead of a native <select> — one
+ * tap, no full-screen OS dialog. Used for both the profile and the satellite (ch. 8).
+ * `value()` returns the selected tile's value; `onChange` fires on each pick.
  */
-function satPicker(selectedLabel: string): { row: HTMLElement; value: () => string } {
+function tilePicker(
+  label: string,
+  tiles: readonly Tile[],
+  selected: string,
+  onChange?: () => void,
+): { row: HTMLElement; value: () => string } {
   const row = el('div', 'field')
-  row.append(el('span', 'field-label', t('newlog.satellite')))
-  const grid = el('div', 'satgrid')
-  let current = selectedLabel
-  const tiles = new Map<string, HTMLButtonElement>()
+  row.append(el('span', 'field-label', label))
+  const grid = el('div', 'tilegrid')
+  let current = selected
+  const nodes = new Map<string, HTMLButtonElement>()
   const paint = (): void => {
-    for (const [label, tile] of tiles) tile.classList.toggle('satgrid-tile--sel', label === current)
+    for (const [value, node] of nodes) node.classList.toggle('tile--sel', value === current)
   }
-  for (const s of SATELLITES) {
-    const tile = el('button', 'satgrid-tile')
-    tile.type = 'button'
-    tile.append(
-      el('b', 'satgrid-name', s.fm ? `${s.label} FM` : s.label),
-      el('span', 'satgrid-band', `${s.up}↑${s.down}↓`),
-    )
-    tile.addEventListener('click', () => {
-      current = s.label
+  for (const it of tiles) {
+    const node = el('button', 'tile')
+    node.type = 'button'
+    node.append(el('b', 'tile-title', it.title))
+    if (it.sub !== undefined) node.append(el('span', 'tile-sub', it.sub))
+    node.addEventListener('click', () => {
+      current = it.value
       paint()
+      onChange?.()
     })
-    tiles.set(s.label, tile)
-    grid.append(tile)
+    nodes.set(it.value, node)
+    grid.append(node)
   }
   paint()
   row.append(grid)
@@ -92,17 +111,18 @@ export class NewLogScreen implements Screen {
     const rememberedSat = satelliteByLabel((await this.platform.getSetting('satLabel')) ?? '') ?? SATELLITES[0]!
 
     const name = fieldRow(t('newlog.name'), '', { placeholder: t('newlog.namePlaceholder') })
-    const profile = selectRow(t('newlog.profile'), PROFILE_OPTIONS(), prev.profile)
+    // syncFields is defined below; the tile's onChange only fires on tap (after render).
+    const profile = tilePicker(t('newlog.profile'), PROFILE_TILES(), prev.profile, () => syncFields())
     const myCall = fieldRow(t('newlog.myCall'), rememberedCall)
     const myGrid = fieldRow(t('newlog.myGrid'), rememberedGrid)
     const myRef = fieldRow(t('newlog.myRef'), '', { placeholder: t('newlog.myRefPlaceholder') })
     const band = selectRow(t('newlog.band'), BAND_OPTIONS, prev.defaultSignal.band)
     const mode = selectRow(t('newlog.mode'), MODE_OPTIONS, prev.defaultSignal.mode)
     // One log per satellite pass — the bird is chosen here, not on the logging screen.
-    const sat = satPicker(prev.satLabel ?? rememberedSat.label)
+    const sat = tilePicker(t('newlog.satellite'), SAT_TILES, prev.satLabel ?? rememberedSat.label)
 
     const collect = (): LogMeta => {
-      const profileId = profile.select.value as ProfileId
+      const profileId = profile.value() as ProfileId
       const chosenSat = satelliteByLabel(sat.value()) ?? rememberedSat
       const meta: { -readonly [K in keyof LogMeta]: LogMeta[K] } = {
         name: name.input.value.trim() || 'Log',
@@ -145,12 +165,11 @@ export class NewLogScreen implements Screen {
 
     // Satellite logs pick a bird (which sets band/mode); other profiles pick band/mode.
     const syncFields = (): void => {
-      const isSat = profile.select.value === 'sat'
+      const isSat = profile.value() === 'sat'
       band.row.hidden = isSat
       mode.row.hidden = isSat
       sat.row.hidden = !isSat
     }
-    profile.select.addEventListener('change', syncFields)
     syncFields()
     name.input.focus()
   }
