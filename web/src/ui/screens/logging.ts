@@ -89,25 +89,16 @@ export class LoggingScreen implements Screen {
     }
     this.db = db
     this.state = initialState(this.meta)
-    // Satellite log: apply the last-used bird so band/mode/SAT_NAME are set.
+    // Satellite log: the bird is fixed at log creation (one log per pass). Apply it
+    // so band/mode/SAT_NAME are set; the header just shows it (read-only).
     if (PROFILES[this.meta.profile].fixedBand) {
-      const saved = (await this.platform.getSetting('satLabel')) ?? ''
-      const sat = satelliteByLabel(saved) ?? SATELLITES[0]!
+      const label = this.meta.satLabel ?? (await this.platform.getSetting('satLabel')) ?? ''
+      const sat = satelliteByLabel(label) ?? SATELLITES[0]!
       this.satLabel = sat.label
       this.state = { ...this.state, sticky: applySatellite(this.state.sticky, sat, 'SSB') }
     }
     this.platform.keepAwake(true) // ch. 16
     await this.offerRecovery()
-    this.renderAll()
-  }
-
-  private selectSatellite(label: string): void {
-    const sat = satelliteByLabel(label)
-    if (!sat) return
-    this.satLabel = label
-    const linMode = this.state.sticky.mode === 'CW' ? 'CW' : 'SSB' // keep CW if working CW
-    this.state = { ...this.state, sticky: applySatellite(this.state.sticky, sat, linMode) }
-    void this.platform.setSetting('satLabel', label)
     this.renderAll()
   }
 
@@ -222,8 +213,9 @@ export class LoggingScreen implements Screen {
     const mid = el('div', 'hdr-mid')
     const profile = PROFILES[this.meta.profile]
     if (profile.fixedBand) {
-      // Satellite: dropdown to pick the bird + up↑/down↓/mode it resolved to.
-      mid.append(this.satelliteSelect(), el('b', undefined, `${s.band}↑ ${s.bandRx ?? '?'}↓ ${s.mode}`))
+      // Satellite (chosen at log creation): show it read-only — name first so it
+      // survives clipping on a narrow screen.
+      mid.append(el('b', 'hdr-sat', `${this.satLabel} ${s.band}↑${s.bandRx ?? '?'}↓ ${s.mode}`))
     } else {
       mid.append(el('b', undefined, `${s.band} ${s.mode}`))
     }
@@ -238,18 +230,6 @@ export class LoggingScreen implements Screen {
       button('?', () => this.nav.toHelp(), 'hdr-nav'),
       button(`QSO ${this.qsos.length} ›`, () => this.nav.toQsoList(), 'hdr-nav'),
     )
-  }
-
-  private satelliteSelect(): HTMLSelectElement {
-    const sel = el('select', 'hdr-sat')
-    for (const sat of SATELLITES) {
-      const o = el('option', undefined, sat.label)
-      o.value = sat.label
-      if (sat.label === this.satLabel) o.selected = true
-      sel.append(o)
-    }
-    sel.addEventListener('change', () => this.selectSatellite(sel.value))
-    return sel
   }
 
   /** Leaving the log offers an export — a safety net against WebKit eviction (ch. 13). */

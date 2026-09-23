@@ -33,6 +33,7 @@ const PROFILE_OPTIONS = (): ReadonlyArray<readonly [ProfileId, string]> => [
 ]
 const BAND_OPTIONS = BANDS.map((b) => [b, b] as const)
 const MODE_OPTIONS = MODES.map((m) => [m, m] as const)
+const SAT_OPTIONS = SATELLITES.map((s) => [s.label, s.label] as const)
 
 export class NewLogScreen implements Screen {
   private readonly root = el('form', 'screen screen--form')
@@ -65,9 +66,12 @@ export class NewLogScreen implements Screen {
     const myRef = fieldRow(t('newlog.myRef'), '', { placeholder: t('newlog.myRefPlaceholder') })
     const band = selectRow(t('newlog.band'), BAND_OPTIONS, prev.defaultSignal.band)
     const mode = selectRow(t('newlog.mode'), MODE_OPTIONS, prev.defaultSignal.mode)
+    // One log per satellite pass — the bird is chosen here, not on the logging screen.
+    const sat = selectRow(t('newlog.satellite'), SAT_OPTIONS, prev.satLabel ?? rememberedSat.label)
 
     const collect = (): LogMeta => {
       const profileId = profile.select.value as ProfileId
+      const chosenSat = satelliteByLabel(sat.select.value) ?? rememberedSat
       const meta: { -readonly [K in keyof LogMeta]: LogMeta[K] } = {
         name: name.input.value.trim() || 'Log',
         profile: profileId,
@@ -75,12 +79,13 @@ export class NewLogScreen implements Screen {
         myGrid: myGrid.input.value.trim().toUpperCase(),
         defaultSignal:
           profileId === 'sat'
-            ? satelliteSignal(rememberedSat, 'SSB')
+            ? satelliteSignal(chosenSat, 'SSB')
             : {
                 band: matchBand(band.select.value) ?? prev.defaultSignal.band,
                 mode: matchMode(mode.select.value) ?? prev.defaultSignal.mode,
               },
       }
+      if (profileId === 'sat') meta.satLabel = chosenSat.label
       const ref: AwardReference | null =
         profileId === 'aktivace' ? parseReferenceInput(myRef.input.value) : null
       if (ref) meta.myRef = ref
@@ -102,17 +107,19 @@ export class NewLogScreen implements Screen {
       myRef.row,
       band.row,
       mode.row,
+      sat.row,
       actions,
     )
 
-    // Satellite logs get their band/mode from the bird → hide those selects.
-    const syncBandMode = (): void => {
+    // Satellite logs pick a bird (which sets band/mode); other profiles pick band/mode.
+    const syncFields = (): void => {
       const isSat = profile.select.value === 'sat'
       band.row.hidden = isSat
       mode.row.hidden = isSat
+      sat.row.hidden = !isSat
     }
-    profile.select.addEventListener('change', syncBandMode)
-    syncBandMode()
+    profile.select.addEventListener('change', syncFields)
+    syncFields()
     name.input.focus()
   }
 
@@ -120,6 +127,7 @@ export class NewLogScreen implements Screen {
     // Remember operator identity for the next New Log (not per-log — logs keep their own meta).
     await this.platform.setSetting('myCall', meta.myCall)
     await this.platform.setSetting('myGrid', meta.myGrid)
+    if (meta.satLabel !== undefined) await this.platform.setSetting('satLabel', meta.satLabel)
     const id = await this.platform.createLog(meta)
     this.nav.created(id)
   }

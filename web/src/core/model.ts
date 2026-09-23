@@ -76,6 +76,7 @@ export interface LogMeta {
   readonly myGrid: string // "Můj locator"
   readonly myRef?: AwardReference // "Moje reference" — Aktivace only
   readonly defaultSignal: Signal // "Pásmo / mód" — sticky seed (ch. 8)
+  readonly satLabel?: string // Satellite: chosen bird (DB label, e.g. "AO-7 A") — one log per pass
 }
 
 /** Default RST for a mode (ch. 8): 599 on CW, 59 otherwise. Not configurable. */

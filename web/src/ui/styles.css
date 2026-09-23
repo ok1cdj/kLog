@@ -38,6 +38,8 @@ body {
 .screen--log {
   height: 100%;
   min-height: 0; /* allow the grid (keyboard) to shrink to fit, never overflow */
+  min-width: 0;
+  overflow: hidden; /* a wide header can never widen the grid / push the keyboard off */
   display: grid;
   grid-template-rows: auto auto auto auto 1fr; /* header · input · preview · strip · keyboard */
   gap: 4px;
@@ -72,7 +74,7 @@ body {
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  flex: 1 1 auto;
+  flex: 1 1 0; /* basis 0 → shrinks to leftover space, never pushes the nav buttons off */
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -214,16 +216,9 @@ body {
   padding: 0 0.3rem;
   border: var(--border-w) solid var(--fg);
 }
-/* Satellite picker in the logging header. */
+/* Satellite (read-only) in the logging header. */
 .hdr-sat {
-  font: inherit;
-  font-size: 0.85rem;
   font-weight: 700;
-  border: var(--border-w) solid var(--fg);
-  background: var(--bg);
-  color: var(--fg);
-  padding: 0.1rem 0.2rem;
-  flex: none;
 }
 
 /* --- crash-journal recovery banner ---------------------------------------- */
@@ -371,6 +366,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+}
+/* [hidden] must win over .field's display:flex (e.g. band/mode on a Satellite log). */
+.field[hidden] {
+  display: none;
 }
 .field-label {
   font-size: 0.8rem;

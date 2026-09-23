@@ -17,6 +17,7 @@ const A = {
   DEFMODE: 'APP_KLOG_DEFMODE',
   DEFBANDRX: 'APP_KLOG_DEFBANDRX',
   DEFMODERX: 'APP_KLOG_DEFMODERX',
+  SATLABEL: 'APP_KLOG_SATLABEL',
 } as const
 
 const PROFILE_IDS: readonly ProfileId[] = ['vkv', 'aktivace', 'obecny', 'sat']
@@ -35,6 +36,7 @@ function metaFields(meta: LogMeta): string[] {
   if (meta.myRef) out.push(writeField(A.MYREF, `${meta.myRef.kind} ${meta.myRef.value}`))
   if (s.bandRx !== undefined) out.push(writeField(A.DEFBANDRX, s.bandRx))
   if (s.modeRx !== undefined) out.push(writeField(A.DEFMODERX, s.modeRx))
+  if (meta.satLabel !== undefined) out.push(writeField(A.SATLABEL, meta.satLabel))
   return out
 }
 
@@ -81,6 +83,8 @@ function metaFromHeader(h: Record<string, string>): LogMeta {
     const ref = parseRef(myRefRaw)
     if (ref) meta.myRef = ref
   }
+  const satLabel = h[A.SATLABEL]
+  if (satLabel !== undefined) meta.satLabel = satLabel
   return meta
 }
 
