@@ -1,7 +1,21 @@
+import org.gradle.api.JavaVersion
+import java.util.Properties
+
 plugins {
     // AGP 9 compiles Kotlin via its built-in support — no separate kotlin plugin.
     alias(libs.plugins.android.application)
 }
+
+// Signing config is read from local.properties (gitignored). CI writes it from
+// repository secrets (see .github/workflows/release.yml). Same pattern as kRadar.
+val signingProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+fun prop(key: String): String = signingProps.getProperty(key, "")
+
+val storeFilePath = prop("signing.storeFile")
+val hasSigning = storeFilePath.isNotEmpty() && rootProject.file(storeFilePath).exists()
 
 android {
     namespace = "com.ok1cdj.klog"
@@ -15,10 +29,27 @@ android {
         versionName = "0.1.0"
     }
 
+    buildFeatures {
+        buildConfig = true // exposes BuildConfig.VERSION_NAME to the bridge
+    }
+
+    if (hasSigning) {
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(storeFilePath)
+                storePassword = prop("signing.storePassword")
+                keyAlias = prop("signing.keyAlias")
+                keyPassword = prop("signing.keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Signing is configured in F2.2 (CI, keystore from secrets).
+            // Reuse the SAME keystore for every release, or app updates fail with a
+            // signature mismatch. Unsigned locally (no keystore) → CI signs it.
+            if (hasSigning) signingConfig = signingConfigs.getByName("release")
         }
     }
 

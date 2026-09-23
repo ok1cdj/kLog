@@ -19,6 +19,9 @@ export interface KLogPlatform {
   /** Host-forced display mode; the web shim leaves it undefined (ch. 3). */
   readonly displayMode?: 'eink' | 'standard'
 
+  /** Native shell (APK) version, shown in About; undefined in the browser. */
+  readonly nativeVersion?: string
+
   listLogs(): Promise<LogSummary[]>
   createLog(meta: LogMeta): Promise<string> // returns the new log id
   appendQso(logId: string, adifRecord: string): Promise<void> // append one record, never rewrite (ch. 13)

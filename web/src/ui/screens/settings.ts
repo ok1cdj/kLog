@@ -93,6 +93,13 @@ export class SettingsScreen implements Screen {
     const wrap = el('div', 'setting about')
     wrap.append(
       el('div', undefined, t('settings.aboutName')),
+      el('div', undefined, t('settings.versionWeb', { v: __APP_VERSION__ })),
+    )
+    // APK version only when running inside the native shell (ch. 2.2).
+    if (this.platform.nativeVersion) {
+      wrap.append(el('div', undefined, t('settings.versionApp', { v: this.platform.nativeVersion })))
+    }
+    wrap.append(
       el('div', undefined, t('settings.aboutLicense')),
       el('div', undefined, t('settings.aboutAuthor')),
       el('div', undefined, 'github.com/ok1cdj/kLog'),

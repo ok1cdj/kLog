@@ -10,6 +10,7 @@ import type { KLogPlatform, LogSummary } from './types'
 /** The raw @JavascriptInterface surface. Pure file I/O keyed by log id (mirrors the OPFS worker). */
 interface NativeBridge {
   displayMode(): string
+  appVersion(): string
   isPersisted(): boolean
   list(): string // JSON array of log ids
   createHeader(id: string, content: string): void
@@ -35,10 +36,12 @@ declare global {
 
 class NativePlatform implements KLogPlatform {
   readonly displayMode: 'eink' | 'standard'
+  readonly nativeVersion: string
 
   constructor(private readonly raw: NativeBridge) {
     const m = raw.displayMode()
     this.displayMode = m === 'standard' ? 'standard' : 'eink'
+    this.nativeVersion = raw.appVersion()
   }
 
   private newId(name: string): string {

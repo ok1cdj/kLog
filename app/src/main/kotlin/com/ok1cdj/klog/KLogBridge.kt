@@ -24,6 +24,9 @@ class KLogBridge(private val activity: MainActivity) {
     fun displayMode(): String = "eink" // e-ink hardcoded in the shell (ch. 1)
 
     @JavascriptInterface
+    fun appVersion(): String = BuildConfig.VERSION_NAME // APK version, shown in About
+
+    @JavascriptInterface
     fun isPersisted(): Boolean = true // real files in app storage
 
     @JavascriptInterface

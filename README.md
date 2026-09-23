@@ -32,10 +32,41 @@ web/
 └── src/sw.ts       service worker (offline-first)
 ```
 
-## Nasazení
+## Android shell (fáze 2)
 
-Push do `main` → GitHub Actions build (`npm ci && npm test && npm run build`) a
-deploy `web/dist` na GitHub Pages.
+`app/` je Android WebView shell (`com.ok1cdj.klog`) — nativní úložiště (logy jako
+`.adi` soubory), SAF export, e-ink režim natvrdo. Lokální build:
+
+```bash
+# potřebuje JDK 17+ a Android SDK (sdk.dir v local.properties)
+cd web && npm run build   # web bundle → zkopíruje se do app assets
+cd .. && ./gradlew :app:assembleDebug
+```
+
+## Nasazení a release
+
+- **Web:** push do `main` → GitHub Actions (`deploy.yml`) `npm ci && npm test &&
+  npm run build` → deploy `web/dist` na GitHub Pages (<https://ok1cdj.github.io/kLog/>).
+- **APK:** tag `v*` (`git tag v1.0 && git push origin v1.0`) → `release.yml`
+  buildne web, podepíše release APK a přiloží ho k GitHub Release.
+
+Podpis APK potřebuje **repository secrets** (Settings → Secrets → Actions), stejně
+jako ostatní appky rodiny:
+
+| secret | obsah |
+|---|---|
+| `KEYSTORE_BASE64` | `base64 -w0 keystore/klog.jks` |
+| `KEYSTORE_PASSWORD` | heslo ke keystore |
+| `KEY_ALIAS` | alias klíče |
+| `KEY_PASSWORD` | heslo klíče |
+
+Keystore se vytvoří jednou a **musí zůstat stejný** pro všechny release (jinak
+aktualizace selžou na neshodě podpisu):
+
+```bash
+keytool -genkeypair -v -keystore keystore/klog.jks -alias klog \
+  -keyalg RSA -keysize 4096 -validity 10000
+```
 
 ## Licence
 

@@ -65,6 +65,8 @@ const en = {
   'settings.aboutName': 'kLog — ham radio logger',
   'settings.aboutLicense': 'License: GPL-3.0',
   'settings.aboutAuthor': 'Author: OK1CDJ',
+  'settings.versionWeb': 'Web bundle: {v}',
+  'settings.versionApp': 'App (APK): {v}',
 
   'logging.recover': 'Recover unfinished QSO {call}?',
   'logging.recoverYes': 'recover',
@@ -132,6 +134,8 @@ const cs: Record<keyof typeof en, string> = {
   'settings.aboutName': 'kLog — ham radio deník',
   'settings.aboutLicense': 'Licence: GPL-3.0',
   'settings.aboutAuthor': 'Autor: OK1CDJ',
+  'settings.versionWeb': 'Webový bundle: {v}',
+  'settings.versionApp': 'Appka (APK): {v}',
 
   'logging.recover': 'Obnovit rozepsané QSO {call}?',
   'logging.recoverYes': 'obnovit',

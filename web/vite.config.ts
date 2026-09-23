@@ -10,6 +10,8 @@ export default defineConfig(({ command }) => ({
     // Unique per build so every deploy = a new SW cache name = old cache purged.
     // (Relying on a manual package.json bump is too easy to forget.)
     __SW_VERSION__: JSON.stringify(`${pkg.version}.${Date.now()}`),
+    // Clean web-bundle version for About (separate from the APK version).
+    __APP_VERSION__: JSON.stringify(pkg.version),
   },
   build: {
     rollupOptions: {

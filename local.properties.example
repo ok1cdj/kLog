@@ -1,2 +1,9 @@
-# Copy to local.properties and set your Android SDK location.
+# Copy to local.properties (gitignored) and set your Android SDK location.
 sdk.dir=/home/YOU/Android/Sdk
+
+# Release signing (optional locally; CI writes these from repository secrets).
+# Without them, assembleRelease produces an unsigned APK.
+# signing.storeFile=keystore/klog.jks
+# signing.storePassword=CHANGEME
+# signing.keyAlias=klog
+# signing.keyPassword=CHANGEME
