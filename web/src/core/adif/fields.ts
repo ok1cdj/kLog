@@ -26,6 +26,9 @@ export const F = {
   MY_SIG_INFO: 'MY_SIG_INFO',
   SRX_STRING: 'SRX_STRING', // received serial (string preserves leading zeros)
   STX_STRING: 'STX_STRING', // sent serial
+  PROP_MODE: 'PROP_MODE', // "SAT" for satellite QSOs
+  SAT_NAME: 'SAT_NAME',
+  SAT_MODE: 'SAT_MODE',
   PROGRAMID: 'PROGRAMID',
   ADIF_VER: 'ADIF_VER',
 } as const

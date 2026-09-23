@@ -45,6 +45,8 @@ export function buildQso(partial: PartialQso, sticky: StickyState, meta: LogMeta
   if (meta.myRef !== undefined) qso.myRef = meta.myRef
   if (partial.name !== undefined) qso.name = partial.name
   if (partial.serial !== undefined) qso.serial = partial.serial
+  if (sticky.satName !== undefined) qso.satName = sticky.satName
+  if (sticky.satMode !== undefined) qso.satMode = sticky.satMode
 
   return qso
 }

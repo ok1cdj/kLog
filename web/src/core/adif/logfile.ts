@@ -19,7 +19,7 @@ const A = {
   DEFMODERX: 'APP_KLOG_DEFMODERX',
 } as const
 
-const PROFILE_IDS: readonly ProfileId[] = ['vkv', 'aktivace', 'obecny']
+const PROFILE_IDS: readonly ProfileId[] = ['vkv', 'aktivace', 'obecny', 'sat']
 const REF_KINDS: readonly ReferenceKind[] = ['SOTA', 'POTA', 'WWFF']
 
 function metaFields(meta: LogMeta): string[] {

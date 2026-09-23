@@ -3,7 +3,17 @@
 // call + locator prefill from the last remembered values (saved on create); each
 // log still keeps its own meta in the .adi.
 
-import { BANDS, MODES, matchBand, matchMode, parseReferenceInput, readLogFile } from '../../core/index'
+import {
+  BANDS,
+  MODES,
+  SATELLITES,
+  matchBand,
+  matchMode,
+  parseReferenceInput,
+  readLogFile,
+  satelliteByLabel,
+  satelliteSignal,
+} from '../../core/index'
 import type { AwardReference, LogMeta, ProfileId } from '../../core/index'
 import type { KLogPlatform } from '../../platform/index'
 import type { Screen } from '../app'
@@ -19,6 +29,7 @@ const PROFILE_OPTIONS = (): ReadonlyArray<readonly [ProfileId, string]> => [
   ['aktivace', t('newlog.profileAktivace')],
   ['obecny', t('newlog.profileObecny')],
   ['vkv', t('newlog.profileVkv')],
+  ['sat', t('newlog.profileSat')],
 ]
 const BAND_OPTIONS = BANDS.map((b) => [b, b] as const)
 const MODE_OPTIONS = MODES.map((m) => [m, m] as const)
@@ -43,6 +54,9 @@ export class NewLogScreen implements Screen {
     // Operator identity: last remembered call/locator win over the last log's (ch. 8).
     const rememberedCall = (await this.platform.getSetting('myCall')) ?? prev.myCall
     const rememberedGrid = (await this.platform.getSetting('myGrid')) ?? prev.myGrid
+    // Satellite profile seeds its signal from the last-used bird (band/mode come
+    // from the satellite, so the band/mode selects are hidden for it).
+    const rememberedSat = satelliteByLabel((await this.platform.getSetting('satLabel')) ?? '') ?? SATELLITES[0]!
 
     const name = fieldRow(t('newlog.name'), '', { placeholder: t('newlog.namePlaceholder') })
     const profile = selectRow(t('newlog.profile'), PROFILE_OPTIONS(), prev.profile)
@@ -59,10 +73,13 @@ export class NewLogScreen implements Screen {
         profile: profileId,
         myCall: myCall.input.value.trim().toUpperCase(),
         myGrid: myGrid.input.value.trim().toUpperCase(),
-        defaultSignal: {
-          band: matchBand(band.select.value) ?? prev.defaultSignal.band,
-          mode: matchMode(mode.select.value) ?? prev.defaultSignal.mode,
-        },
+        defaultSignal:
+          profileId === 'sat'
+            ? satelliteSignal(rememberedSat, 'SSB')
+            : {
+                band: matchBand(band.select.value) ?? prev.defaultSignal.band,
+                mode: matchMode(mode.select.value) ?? prev.defaultSignal.mode,
+              },
       }
       const ref: AwardReference | null =
         profileId === 'aktivace' ? parseReferenceInput(myRef.input.value) : null
@@ -87,6 +104,15 @@ export class NewLogScreen implements Screen {
       mode.row,
       actions,
     )
+
+    // Satellite logs get their band/mode from the bird → hide those selects.
+    const syncBandMode = (): void => {
+      const isSat = profile.select.value === 'sat'
+      band.row.hidden = isSat
+      mode.row.hidden = isSat
+    }
+    profile.select.addEventListener('change', syncBandMode)
+    syncBandMode()
     name.input.focus()
   }
 

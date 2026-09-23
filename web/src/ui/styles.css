@@ -214,6 +214,17 @@ body {
   padding: 0 0.3rem;
   border: var(--border-w) solid var(--fg);
 }
+/* Satellite picker in the logging header. */
+.hdr-sat {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: var(--border-w) solid var(--fg);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 0.1rem 0.2rem;
+  flex: none;
+}
 
 /* --- crash-journal recovery banner ---------------------------------------- */
 

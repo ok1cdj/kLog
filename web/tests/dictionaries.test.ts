@@ -6,7 +6,7 @@ describe('band dictionary (ch. 9 #1)', () => {
     for (const b of BANDS) {
       expect(matchBand(b)).toBe(b)
     }
-    expect(BANDS.length).toBe(15)
+    expect(BANDS.length).toBe(17) // incl. 13cm/3cm for QO-100
   })
 
   it('is case-insensitive and canonicalizes to lowercase', () => {

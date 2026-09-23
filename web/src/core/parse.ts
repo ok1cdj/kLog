@@ -33,7 +33,8 @@ export function parseLine(
   for (const { cls } of tokens) {
     switch (cls.type) {
       case 'band':
-        nextSticky = applyBand(nextSticky, cls.value)
+        // Satellite: bands come from the bird — ignore typed band tokens (ch. F3).
+        if (!profile.fixedBand) nextSticky = applyBand(nextSticky, cls.value)
         break
       case 'mode':
         nextSticky = applyMode(nextSticky, cls.value)

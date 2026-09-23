@@ -1,6 +1,7 @@
 // Sticky-state seed and threading helpers (ch. 9.3). All pure; nothing mutated.
 
 import type { LogMeta, StickyState } from './model'
+import type { Satellite } from './satellites'
 
 /** Seed sticky band/mode from the log header's default signal (ch. 8). */
 export function initialSticky(meta: LogMeta): StickyState {
@@ -20,4 +21,16 @@ export function applyBand(s: StickyState, band: string): StickyState {
 
 export function applyMode(s: StickyState, mode: string): StickyState {
   return { ...s, mode }
+}
+
+/** Select a satellite: sets uplink/downlink band, mode and SAT_NAME/SAT_MODE (F3). */
+export function applySatellite(s: StickyState, sat: Satellite, mode: string): StickyState {
+  return {
+    ...s,
+    band: sat.up, // BAND = uplink
+    bandRx: sat.down, // BAND_RX = downlink
+    mode: sat.fm ? 'FM' : mode,
+    satName: sat.name,
+    satMode: sat.satMode,
+  }
 }

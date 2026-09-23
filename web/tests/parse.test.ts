@@ -98,6 +98,24 @@ describe('VKV contest exchange (ch. 9 #7)', () => {
   })
 })
 
+describe('Satellite profile (F3): report + locator, band tokens ignored', () => {
+  it('9A5Y 59 JN86 → call + received report + locator', () => {
+    const r = parseLine('9A5Y 59 JN86', { band: '2m', mode: 'SSB' }, {}, PROFILES.sat)
+    expect(r.partial).toMatchObject({ call: '9A5Y', reportRcvd: '59', grid: 'JN86' })
+  })
+
+  it('a typed band token does not change the (satellite) band', () => {
+    const r = parseLine('40m 9A5Y', { band: '2m', mode: 'SSB' }, {}, PROFILES.sat)
+    expect(r.sticky.band).toBe('2m') // bird sets the band, not the token
+    expect(r.partial.call).toBe('9A5Y')
+  })
+
+  it('a mode token still switches mode (SSB↔CW on linear birds)', () => {
+    const r = parseLine('cw 9A5Y', { band: '2m', mode: 'SSB' }, {}, PROFILES.sat)
+    expect(r.sticky.mode).toBe('CW')
+  })
+})
+
 describe('piecewise accumulation across lines (ch. 11 phase 1)', () => {
   it('OK1ABC, then JN79US, then PETR accumulate into one partial', () => {
     let partial = {}

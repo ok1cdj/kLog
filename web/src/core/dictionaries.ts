@@ -18,6 +18,8 @@ export const BANDS: readonly string[] = [
   '2m',
   '70cm',
   '23cm',
+  '13cm', // QO-100 uplink (2.4 GHz)
+  '3cm', // QO-100 downlink (10 GHz)
 ]
 
 /** Modes recognized as sticky tokens (ch. 9 #2), canonical uppercase form. */

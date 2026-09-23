@@ -52,6 +52,10 @@ export function writeQso(qso: Qso): string {
   if (qso.name !== undefined) parts.push(writeField(F.NAME, qso.name))
   if (qso.serial !== undefined) parts.push(writeField(F.SRX_STRING, qso.serial))
   if (qso.sentSerial !== undefined) parts.push(writeField(F.STX_STRING, qso.sentSerial))
+  if (qso.satName !== undefined) {
+    parts.push(writeField(F.PROP_MODE, 'SAT'), writeField(F.SAT_NAME, qso.satName))
+    if (qso.satMode !== undefined) parts.push(writeField(F.SAT_MODE, qso.satMode))
+  }
 
   return parts.join(' ') + ' <EOR>'
 }

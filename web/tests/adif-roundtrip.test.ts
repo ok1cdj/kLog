@@ -73,6 +73,21 @@ describe('parse → ADIF → parse roundtrip (ch. 13, 17)', () => {
     expect(roundtrip(qso)).toEqual(qso)
   })
 
+  it('satellite QSO: PROP_MODE/SAT_NAME/SAT_MODE + BAND_RX (F3)', () => {
+    const qso: Qso = {
+      ...BASE,
+      call: '9A5Y',
+      signal: { band: '2m', bandRx: '70cm', mode: 'SSB' },
+      grid: 'JN86',
+      satName: 'RS-44',
+      satMode: 'V/U',
+    }
+    const text = writeAdif([qso])
+    expect(text).toContain('<PROP_MODE:3>SAT')
+    expect(text).toContain('<SAT_NAME:5>RS-44')
+    expect(roundtrip(qso)).toEqual(qso)
+  })
+
   it('satellite-shaped Qso with BAND_RX (ch. 19.1)', () => {
     const qso: Qso = {
       ...BASE,

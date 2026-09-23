@@ -13,6 +13,9 @@ import {
   buildCallDatabase,
   isDupe,
   defaultReport,
+  applySatellite,
+  satelliteByLabel,
+  SATELLITES,
   PROFILES,
 } from '../../core/index'
 import type { CallDatabase, CoreState, LogMeta, PartialQso, Qso } from '../../core/index'
@@ -39,6 +42,7 @@ export class LoggingScreen implements Screen {
   private line = ''
   private qsos: Qso[] = [] // current log, for DUPE + count
   private db: CallDatabase = buildCallDatabase()
+  private satLabel = '' // current satellite (Satellite profile only)
 
   private readonly hdr = el('header', 'hdr')
   private readonly inputEl = el('div', 'inputline')
@@ -85,8 +89,25 @@ export class LoggingScreen implements Screen {
     }
     this.db = db
     this.state = initialState(this.meta)
+    // Satellite log: apply the last-used bird so band/mode/SAT_NAME are set.
+    if (PROFILES[this.meta.profile].fixedBand) {
+      const saved = (await this.platform.getSetting('satLabel')) ?? ''
+      const sat = satelliteByLabel(saved) ?? SATELLITES[0]!
+      this.satLabel = sat.label
+      this.state = { ...this.state, sticky: applySatellite(this.state.sticky, sat, 'SSB') }
+    }
     this.platform.keepAwake(true) // ch. 16
     await this.offerRecovery()
+    this.renderAll()
+  }
+
+  private selectSatellite(label: string): void {
+    const sat = satelliteByLabel(label)
+    if (!sat) return
+    this.satLabel = label
+    const linMode = this.state.sticky.mode === 'CW' ? 'CW' : 'SSB' // keep CW if working CW
+    this.state = { ...this.state, sticky: applySatellite(this.state.sticky, sat, linMode) }
+    void this.platform.setSetting('satLabel', label)
     this.renderAll()
   }
 
@@ -199,9 +220,16 @@ export class LoggingScreen implements Screen {
         ? hhmm(this.state.partial.timeOn)
         : '--:--'
     const mid = el('div', 'hdr-mid')
-    mid.append(el('b', undefined, `${s.band} ${s.mode}`), callChip(this.state.partial.call), el('b', undefined, `${time}z`))
+    const profile = PROFILES[this.meta.profile]
+    if (profile.fixedBand) {
+      // Satellite: dropdown to pick the bird + up↑/down↓/mode it resolved to.
+      mid.append(this.satelliteSelect(), el('b', undefined, `${s.band}↑ ${s.bandRx ?? '?'}↓ ${s.mode}`))
+    } else {
+      mid.append(el('b', undefined, `${s.band} ${s.mode}`))
+    }
+    mid.append(callChip(this.state.partial.call), el('b', undefined, `${time}z`))
     // VKV: show the next sent serial so the operator knows what to give out.
-    if (PROFILES[this.meta.profile].serialAfterCall) {
+    if (profile.serialAfterCall) {
       mid.append(el('b', 'hdr-tx', `TX ${pad3(this.qsos.length + 1)}`))
     }
     this.hdr.replaceChildren(
@@ -210,6 +238,18 @@ export class LoggingScreen implements Screen {
       button('?', () => this.nav.toHelp(), 'hdr-nav'),
       button(`QSO ${this.qsos.length} ›`, () => this.nav.toQsoList(), 'hdr-nav'),
     )
+  }
+
+  private satelliteSelect(): HTMLSelectElement {
+    const sel = el('select', 'hdr-sat')
+    for (const sat of SATELLITES) {
+      const o = el('option', undefined, sat.label)
+      o.value = sat.label
+      if (sat.label === this.satLabel) o.selected = true
+      sel.append(o)
+    }
+    sel.addEventListener('change', () => this.selectSatellite(sel.value))
+    return sel
   }
 
   /** Leaving the log offers an export — a safety net against WebKit eviction (ch. 13). */
@@ -222,9 +262,15 @@ export class LoggingScreen implements Screen {
 
   private renderLine(): void {
     this.inputEl.replaceChildren(document.createTextNode(this.line), el('span', 'cursor'))
-    // DUPE (ch. 10): invert the input line when call+band+mode already worked.
+    // DUPE (ch. 10): invert the input line. Satellite dupe keys on call + SAT_NAME
+    // (a station can be re-worked on another bird); otherwise call + band + mode.
     const call = this.effectiveCall()
-    const dupe = call !== undefined && isDupe(this.qsos, call, this.state.sticky.band, this.state.sticky.mode)
+    const s = this.state.sticky
+    const dupe =
+      call !== undefined &&
+      (PROFILES[this.meta.profile].fixedBand
+        ? this.qsos.some((q) => q.call.toUpperCase() === call.toUpperCase() && q.satName === s.satName)
+        : isDupe(this.qsos, call, s.band, s.mode))
     this.inputEl.classList.toggle('inputline--dupe', dupe)
   }
 
@@ -239,7 +285,8 @@ export class LoggingScreen implements Screen {
       chips.push(fieldChip('RST', p.reportRcvd ?? defaultReport(this.state.sticky.mode)))
       if (p.reportSent) chips.push(fieldChip('TX-RST', p.reportSent))
       if (profile.serialAfterCall) chips.push(fieldChip('NR', p.serial ?? '—', p.serial === undefined))
-      if (profile.serialAfterCall || p.grid !== undefined) {
+      // Locator is expected in VKV and Satellite exchanges → always show (— if missing).
+      if (profile.serialAfterCall || profile.fixedBand || p.grid !== undefined) {
         chips.push(fieldChip('LOC', p.grid ?? '—', p.grid === undefined))
       }
       if (p.theirRef) chips.push(fieldChip('REF', p.theirRef.value))

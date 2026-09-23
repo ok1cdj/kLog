@@ -54,6 +54,10 @@ function toQso(r: Record<string, string>): Qso {
   if (serial !== undefined) qso.serial = serial
   const sentSerial = r[F.STX_STRING]
   if (sentSerial !== undefined) qso.sentSerial = sentSerial
+  const satName = r[F.SAT_NAME] // PROP_MODE=SAT is implied by SAT_NAME's presence
+  if (satName !== undefined) qso.satName = satName
+  const satMode = r[F.SAT_MODE]
+  if (satMode !== undefined) qso.satMode = satMode
   return qso
 }
 

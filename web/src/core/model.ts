@@ -42,9 +42,11 @@ export interface Qso {
   readonly name?: string // ADIF NAME — Obecný (ch. 9 #9)
   readonly serial?: string // received serial (ADIF SRX_STRING) — VKV závod
   readonly sentSerial?: string // sent serial (ADIF STX_STRING) — VKV závod, auto-incremented
+  readonly satName?: string // ADIF SAT_NAME (+ implied PROP_MODE=SAT) — Satellite
+  readonly satMode?: string // ADIF SAT_MODE, e.g. "V/U" — Satellite
 }
 
-export type ProfileId = 'vkv' | 'aktivace' | 'obecny'
+export type ProfileId = 'vkv' | 'aktivace' | 'obecny' | 'sat'
 
 /**
  * Capability flags for a log profile (ch. 7). The parser reads only these
@@ -56,12 +58,14 @@ export interface LogProfile {
   readonly serialAfterCall: boolean // ch. 9 #7: a number after the call is a serial (vkv) vs received report (others)
   readonly parsesName: boolean // ch. 9 #9: name only in Obecný
   readonly usesReferences: boolean // Aktivace only (ch. 7, 14)
+  readonly fixedBand: boolean // Satellite: band comes from the bird, ignore typed band tokens
 }
 
 export const PROFILES: Readonly<Record<ProfileId, LogProfile>> = Object.freeze({
-  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false }),
-  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true }),
-  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false }),
+  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false }),
+  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false }),
+  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false }),
+  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true }),
 })
 
 /** Log-creation payload (ch. 8 header + ch. 9.3 sticky "my-*" source). Storage-agnostic. */
@@ -85,6 +89,8 @@ export interface StickyState {
   readonly mode: string
   readonly bandRx?: string // ch. 19.1 forward-compat
   readonly modeRx?: string
+  readonly satName?: string // Satellite: ADIF SAT_NAME
+  readonly satMode?: string // Satellite: ADIF SAT_MODE
 }
 
 /** One token's classification. Union order documents ch. 9 priority. */

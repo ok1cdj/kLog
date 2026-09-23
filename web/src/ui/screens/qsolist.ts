@@ -61,5 +61,6 @@ function formatRow(q: Qso): string {
   const ref = q.theirRef ? ` ${q.theirRef.value}` : ''
   const extra = q.grid ? ` ${q.grid}` : q.name ? ` ${q.name}` : ''
   const nums = q.sentSerial || q.serial ? ` #${q.sentSerial ?? '—'}/${q.serial ?? '—'}` : ''
-  return `${stamp(q.timeOn)}  ${q.call}  ${q.signal.band} ${q.signal.mode}  ${q.report.sent}/${q.report.rcvd}${nums}${extra}${ref}`
+  const sat = q.satName ? ` 🛰${q.satName}` : ''
+  return `${stamp(q.timeOn)}  ${q.call}  ${q.signal.band} ${q.signal.mode}  ${q.report.sent}/${q.report.rcvd}${nums}${extra}${ref}${sat}`
 }

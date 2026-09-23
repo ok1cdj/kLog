@@ -112,6 +112,8 @@ export class QsoEditScreen implements Screen {
       const sn = serial.input.value.trim()
       if (sn) q.serial = sn
       if (orig.sentSerial !== undefined) q.sentSerial = orig.sentSerial // TX serial is auto, not edited
+      if (orig.satName !== undefined) q.satName = orig.satName // satellite fields carried, not edited
+      if (orig.satMode !== undefined) q.satMode = orig.satMode
       return q
     }
 
