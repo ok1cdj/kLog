@@ -17,19 +17,27 @@ body {
   height: 100%;
   user-select: none;
   overscroll-behavior: none;
+  overflow: hidden; /* the app fills the viewport; screens scroll internally */
   font-family: system-ui, sans-serif;
   color: var(--fg);
   background: var(--bg);
 }
 
 #app {
-  height: 100dvh;
+  /* svh = smallest viewport height → always fits under a mobile URL bar without
+     scrolling (dvh/vh can report taller than the visible area). */
+  height: 100vh;
+  height: 100svh;
   overflow: hidden;
+  /* Keep content out of notch / rounded-corner areas (0 on the Kompakt). */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 
 /* The logging screen owns the portrait band layout (ch. 4). */
 .screen--log {
   height: 100%;
+  min-height: 0; /* allow the grid (keyboard) to shrink to fit, never overflow */
   display: grid;
   grid-template-rows: auto auto auto auto 1fr; /* header · input · preview · strip · keyboard */
   gap: 4px;
@@ -236,6 +244,7 @@ body {
   border: var(--border-w) solid var(--line);
   width: 100%;
   height: 100%;
+  min-height: 0; /* fit the available space, never push the layout past the viewport */
   max-width: 400px; /* otherwise huge keys on an iPad (ch. 4) */
   margin-inline: auto;
 }
@@ -243,6 +252,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 0;
+  min-width: 0;
   border: 0;
   background: var(--bg);
   color: var(--fg);
