@@ -6,6 +6,7 @@ import type { Qso, Signal } from '../../core/index'
 import type { KLogPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button, fieldRow, selectRow } from '../dom'
+import { t } from '../i18n'
 
 // Include the QSO's current value even if it is not a dictionary band/mode (e.g. imported).
 const bandOptions = (current: string): ReadonlyArray<readonly [string, string]> => {
@@ -50,27 +51,27 @@ export class QsoEditScreen implements Screen {
       return
     }
 
-    const call = fieldRow('Volačka', orig.call)
-    const band = selectRow('Pásmo', bandOptions(orig.signal.band), orig.signal.band)
-    const mode = selectRow('Mód', modeOptions(orig.signal.mode), orig.signal.mode)
-    const sent = fieldRow('RST vyslaný', orig.report.sent)
-    const rcvd = fieldRow('RST přijatý', orig.report.rcvd)
-    const grid = fieldRow('Locator', orig.grid ?? '')
-    const name = fieldRow('Jméno', orig.name ?? '')
-    const serial = fieldRow('Poř. číslo přijaté', orig.serial ?? '')
-    const ref = fieldRow('Reference (protistanice)', orig.theirRef?.value ?? '')
-    const date = fieldRow('Datum UTC (RRRRMMDD)', dateStr(orig.timeOn))
-    const time = fieldRow('Čas UTC (HHMM)', timeStr(orig.timeOn))
+    const call = fieldRow(t('qsoedit.call'), orig.call)
+    const band = selectRow(t('qsoedit.band'), bandOptions(orig.signal.band), orig.signal.band)
+    const mode = selectRow(t('qsoedit.mode'), modeOptions(orig.signal.mode), orig.signal.mode)
+    const sent = fieldRow(t('qsoedit.rstSent'), orig.report.sent)
+    const rcvd = fieldRow(t('qsoedit.rstRcvd'), orig.report.rcvd)
+    const grid = fieldRow(t('qsoedit.locator'), orig.grid ?? '')
+    const name = fieldRow(t('qsoedit.name'), orig.name ?? '')
+    const serial = fieldRow(t('qsoedit.serialRcvd'), orig.serial ?? '')
+    const ref = fieldRow(t('qsoedit.ref'), orig.theirRef?.value ?? '')
+    const date = fieldRow(t('qsoedit.dateUtc'), dateStr(orig.timeOn))
+    const time = fieldRow(t('qsoedit.timeUtc'), timeStr(orig.timeOn))
 
     const actions = el('div', 'form-actions')
     actions.append(
-      button('Uložit', () => void this.save(build()), 'btn btn--primary'),
-      button('Smazat', () => void this.remove(), 'btn btn--danger'),
-      button('Zpět', () => this.nav.done(), 'btn'),
+      button(t('common.save'), () => void this.save(build()), 'btn btn--primary'),
+      button(t('common.delete'), () => void this.remove(), 'btn btn--danger'),
+      button(t('common.back'), () => this.nav.done(), 'btn'),
     )
 
     this.root.replaceChildren(
-      el('div', 'bar', 'Úprava QSO'),
+      el('div', 'bar', t('qsoedit.title')),
       call.row,
       band.row,
       mode.row,
@@ -131,7 +132,7 @@ export class QsoEditScreen implements Screen {
   }
 
   private async remove(): Promise<void> {
-    if (!confirm('Smazat toto QSO?')) return
+    if (!confirm(t('qsoedit.deleteConfirm'))) return
     await this.commit?.((list) => {
       list.splice(this.index, 1)
     })

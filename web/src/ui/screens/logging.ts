@@ -5,32 +5,28 @@
 import {
   tokenize,
   classifyLine,
+  parseLine,
   reduce,
   initialState,
   writeQso,
   readLogFile,
   buildCallDatabase,
   isDupe,
+  defaultReport,
   PROFILES,
 } from '../../core/index'
-import type {
-  CallDatabase,
-  ClassifiedToken,
-  CoreState,
-  LogMeta,
-  PartialQso,
-  Qso,
-  TokenClass,
-} from '../../core/index'
+import type { CallDatabase, CoreState, LogMeta, PartialQso, Qso } from '../../core/index'
 import type { KLogPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
+import { t } from '../i18n'
 import { createKeyboard } from '../keyboard'
 import type { KeyAction } from '../keys'
 
 export interface LoggingNav {
   toLogList(): void
   toQsoList(): void
+  toHelp(): void
 }
 
 const pad2 = (n: number): string => (n < 10 ? '0' + n : String(n))
@@ -169,13 +165,13 @@ export class LoggingScreen implements Screen {
       return
     }
     this.banner.replaceChildren(
-      el('span', undefined, `Obnovit rozepsané QSO ${partial.call ?? ''}? `),
-      button('obnovit', () => {
+      el('span', undefined, t('logging.recover', { call: partial.call ?? '' }) + ' '),
+      button(t('logging.recoverYes'), () => {
         this.state = { ...this.state, partial, hasStarted: true }
         this.banner.hidden = true
         this.renderAll()
       }),
-      button('zahodit', () => {
+      button(t('logging.recoverNo'), () => {
         void this.platform.clearJournal(this.logId)
         this.banner.hidden = true
       }),
@@ -194,7 +190,14 @@ export class LoggingScreen implements Screen {
 
   private renderHeader(): void {
     const s = this.state.sticky
-    const time = this.state.partial.timeOn ? hhmm(this.state.partial.timeOn) : '--:--'
+    // Show the effective UTC time that will be saved: a manual HHMM override if
+    // typed, otherwise the first-keystroke stamp (both UTC).
+    const ov = this.state.partial.timeOverride
+    const time = ov
+      ? `${ov.slice(0, 2)}:${ov.slice(2)}`
+      : this.state.partial.timeOn
+        ? hhmm(this.state.partial.timeOn)
+        : '--:--'
     const mid = el('div', 'hdr-mid')
     mid.append(el('b', undefined, `${s.band} ${s.mode}`), callChip(this.state.partial.call), el('b', undefined, `${time}z`))
     // VKV: show the next sent serial so the operator knows what to give out.
@@ -202,15 +205,16 @@ export class LoggingScreen implements Screen {
       mid.append(el('b', 'hdr-tx', `TX ${pad3(this.qsos.length + 1)}`))
     }
     this.hdr.replaceChildren(
-      button('‹ Logy', () => void this.close(), 'hdr-nav'),
+      button(t('logging.navLogs'), () => void this.close(), 'hdr-nav'),
       mid,
+      button('?', () => this.nav.toHelp(), 'hdr-nav'),
       button(`QSO ${this.qsos.length} ›`, () => this.nav.toQsoList(), 'hdr-nav'),
     )
   }
 
   /** Leaving the log offers an export — a safety net against WebKit eviction (ch. 13). */
   private async close(): Promise<void> {
-    if (this.qsos.length > 0 && confirm('Zavřít log — exportovat zálohu .adi?')) {
+    if (this.qsos.length > 0 && confirm(t('logging.closeExport'))) {
       await this.platform.exportLog(this.logId, `${this.logId}.adi`)
     }
     this.nav.toLogList()
@@ -225,9 +229,24 @@ export class LoggingScreen implements Screen {
   }
 
   private renderPreview(): void {
-    const callSeen = this.state.partial.call !== undefined
-    const tokens = classifyLine(tokenize(this.line), PROFILES[this.meta.profile], callSeen)
-    this.previewEl.replaceChildren(...tokens.map(renderToken))
+    const profile = PROFILES[this.meta.profile]
+    // Dry-run the current line onto the accumulated QSO so the preview shows what
+    // will actually be SAVED — filled fields, plus (for VKV) the still-missing ones.
+    const { partial: p, tokens } = parseLine(this.line, this.state.sticky, this.state.partial, profile)
+    const chips: HTMLElement[] = []
+    if (p.call) {
+      chips.push(fieldChip('CALL', p.call))
+      chips.push(fieldChip('RST', p.reportRcvd ?? defaultReport(this.state.sticky.mode)))
+      if (p.reportSent) chips.push(fieldChip('TX-RST', p.reportSent))
+      if (profile.serialAfterCall) chips.push(fieldChip('NR', p.serial ?? '—', p.serial === undefined))
+      if (profile.serialAfterCall || p.grid !== undefined) {
+        chips.push(fieldChip('LOC', p.grid ?? '—', p.grid === undefined))
+      }
+      if (p.theirRef) chips.push(fieldChip('REF', p.theirRef.value))
+      if (p.name) chips.push(fieldChip('NAME', p.name))
+    }
+    for (const t of tokens) if (t.cls.type === 'unknown') chips.push(unknownChip(t.raw))
+    this.previewEl.replaceChildren(...chips)
   }
 
   private renderStrip(): void {
@@ -307,7 +326,6 @@ const DEFAULT_META: LogMeta = {
   profile: 'aktivace',
   myCall: 'OK1CDJ',
   myGrid: 'JN79US',
-  defaultReport: '59',
   defaultSignal: { band: '40m', mode: 'SSB' },
 }
 
@@ -316,24 +334,26 @@ function callChip(call: string | undefined): HTMLElement {
   return b
 }
 
-function renderToken({ raw, cls }: ClassifiedToken): HTMLElement {
-  const { text, kind } = tokenLabel(cls)
-  const e = el('span', kind === 'unknown' ? 'tok tok--unknown' : 'tok', text)
-  e.title = raw
-  e.append(el('small', undefined, kind))
+// A parse-preview chip showing a QSO field that will be saved. `missing` renders it
+// as an empty placeholder so the operator sees what is not yet filled (ch. 10).
+function fieldChip(label: string, value: string, missing = false): HTMLElement {
+  const e = el('span', missing ? 'tok tok--missing' : 'tok', value)
+  e.append(el('small', undefined, label))
   return e
 }
 
-function tokenLabel(cls: TokenClass): { text: string; kind: string } {
-  if (cls.type === 'unknown') return { text: cls.raw, kind: 'unknown' }
-  if (cls.type === 'reference') return { text: `${cls.value.kind} ${cls.value.value}`, kind: 'reference' }
-  return { text: cls.value, kind: cls.type }
+function unknownChip(raw: string): HTMLElement {
+  const e = el('span', 'tok tok--unknown', raw)
+  e.title = raw
+  e.append(el('small', undefined, '?'))
+  return e
 }
 
 function formatQso(q: Qso): string {
   const ref = q.theirRef ? ` ${q.theirRef.value}` : ''
   const grid = q.grid ? ` ${q.grid}` : ''
-  return `${hhmm(q.timeOn)} ${q.call} ${q.report.sent}/${q.report.rcvd}${grid}${ref}`
+  const nums = q.sentSerial || q.serial ? ` #${q.sentSerial ?? '—'}/${q.serial ?? '—'}` : ''
+  return `${hhmm(q.timeOn)} ${q.call} ${q.report.sent}/${q.report.rcvd}${nums}${grid}${ref}`
 }
 
 function serialize(p: PartialQso): string {

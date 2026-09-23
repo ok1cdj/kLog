@@ -15,7 +15,7 @@ export type {
   PartialQso,
   CoreState,
 } from './model'
-export { PROFILES } from './model'
+export { PROFILES, defaultReport } from './model'
 
 export { BANDS, MODES, matchBand, matchMode } from './dictionaries'
 export { matchReference, parseReferenceInput } from './reference'

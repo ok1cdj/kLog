@@ -1,6 +1,6 @@
-// Settings (ch. 15 #5). Display mode is the first item (ch. 3). Also shows the
-// active storage backend and About info. Language follows navigator.language with
-// no in-app switch (ch. 2), so it is not offered here.
+// Settings (ch. 15 #5). Display mode is the first item (ch. 3). Also: a link to the
+// "How to log" help, the active storage backend, and About. Language follows
+// navigator.language with no in-app switch (ch. 2).
 
 import { platformKind } from '../../platform/index'
 import type { KLogPlatform } from '../../platform/index'
@@ -8,15 +8,17 @@ import { currentDisplayMode, setDisplayMode } from '../../theme/mode'
 import type { DisplayMode } from '../../theme/mode'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
+import { t } from '../i18n'
 
 export interface SettingsNav {
   back(): void
+  openHelp(): void
 }
 
-const STORAGE_LABEL: Record<ReturnType<typeof platformKind>, string> = {
-  native: 'nativní (APK)',
-  opfs: 'OPFS (prohlížeč)',
-  memory: 'jen v paměti — nepřežije zavření!',
+const STORAGE_KEY: Record<ReturnType<typeof platformKind>, 'settings.storageNative' | 'settings.storageOpfs' | 'settings.storageMemory'> = {
+  native: 'settings.storageNative',
+  opfs: 'settings.storageOpfs',
+  memory: 'settings.storageMemory',
 }
 
 export class SettingsScreen implements Screen {
@@ -36,15 +38,21 @@ export class SettingsScreen implements Screen {
 
   private async render(): Promise<void> {
     const bar = el('div', 'bar')
-    bar.append(button('‹ zpět', () => this.nav.back(), 'hdr-nav'), el('b', 'title', 'Nastavení'))
+    bar.append(button(`‹ ${t('common.back')}`, () => this.nav.back(), 'hdr-nav'), el('b', 'title', t('settings.title')))
 
     const persisted = await this.platform.isPersisted()
-    this.root.replaceChildren(bar, this.displayModeSetting(), this.storageSetting(persisted), this.about())
+    this.root.replaceChildren(
+      bar,
+      this.displayModeSetting(),
+      this.helpSetting(),
+      this.storageSetting(persisted),
+      this.about(),
+    )
   }
 
   private displayModeSetting(): HTMLElement {
     const wrap = el('div', 'setting')
-    wrap.append(el('span', 'field-label', 'Zobrazení'))
+    wrap.append(el('span', 'field-label', t('settings.display')))
     const seg = el('div', 'segmented')
 
     const mkBtn = (mode: DisplayMode, label: string): HTMLButtonElement => {
@@ -53,7 +61,7 @@ export class SettingsScreen implements Screen {
       b.setAttribute('aria-pressed', String(currentDisplayMode() === mode))
       return b
     }
-    seg.append(mkBtn('standard', 'Standardní'), mkBtn('eink', 'E-ink'))
+    seg.append(mkBtn('standard', t('settings.standard')), mkBtn('eink', t('settings.eink')))
     wrap.append(seg)
     return wrap
   }
@@ -65,18 +73,18 @@ export class SettingsScreen implements Screen {
     }
   }
 
+  private helpSetting(): HTMLElement {
+    const wrap = el('div', 'setting')
+    wrap.append(button(`${t('settings.help')} ›`, () => this.nav.openHelp(), 'btn'))
+    return wrap
+  }
+
   private storageSetting(persisted: boolean): HTMLElement {
     const wrap = el('div', 'setting')
     wrap.append(
-      el('span', 'field-label', 'Úložiště'),
-      el('div', undefined, STORAGE_LABEL[platformKind()]),
-      el(
-        'div',
-        'about',
-        persisted
-          ? 'Trvalé (persist): ano'
-          : 'Trvalé (persist): ne — zapne se po přidání na plochu a prvním QSO (hlavně kvůli iPadu)',
-      ),
+      el('span', 'field-label', t('settings.storage')),
+      el('div', undefined, t(STORAGE_KEY[platformKind()])),
+      el('div', 'about', persisted ? t('settings.persistYes') : t('settings.persistNo')),
     )
     return wrap
   }
@@ -84,9 +92,9 @@ export class SettingsScreen implements Screen {
   private about(): HTMLElement {
     const wrap = el('div', 'setting about')
     wrap.append(
-      el('div', undefined, 'kLog — ham radio deník'),
-      el('div', undefined, 'Licence: GPL-3.0'),
-      el('div', undefined, 'Autor: OK1CDJ'),
+      el('div', undefined, t('settings.aboutName')),
+      el('div', undefined, t('settings.aboutLicense')),
+      el('div', undefined, t('settings.aboutAuthor')),
       el('div', undefined, 'github.com/ok1cdj/kLog'),
     )
     return wrap

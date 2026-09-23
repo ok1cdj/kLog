@@ -9,6 +9,7 @@ import { LoggingScreen } from './screens/logging'
 import { QsoListScreen } from './screens/qsolist'
 import { QsoEditScreen } from './screens/qsoedit'
 import { SettingsScreen } from './screens/settings'
+import { HelpScreen } from './screens/help'
 
 export interface Screen {
   mount(root: HTMLElement): void | Promise<void>
@@ -42,7 +43,12 @@ export class App {
   }
 
   showSettings(): void {
-    this.show(new SettingsScreen(this.platform, { back: () => this.showLogList() }))
+    this.show(
+      new SettingsScreen(this.platform, {
+        back: () => this.showLogList(),
+        openHelp: () => this.showHelp(() => this.showSettings()),
+      }),
+    )
   }
 
   showNewLog(): void {
@@ -59,8 +65,13 @@ export class App {
       new LoggingScreen(this.platform, logId, {
         toLogList: () => this.showLogList(),
         toQsoList: () => this.showQsoList(logId),
+        toHelp: () => this.showHelp(() => this.showLogging(logId)),
       }),
     )
+  }
+
+  showHelp(back: () => void): void {
+    this.show(new HelpScreen({ back }))
   }
 
   showQsoList(logId: string): void {

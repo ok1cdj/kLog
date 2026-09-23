@@ -8,16 +8,17 @@ import type { AwardReference, LogMeta, ProfileId } from '../../core/index'
 import type { KLogPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button, fieldRow, selectRow } from '../dom'
+import { t } from '../i18n'
 
 export interface NewLogNav {
   created(id: string): void
   cancel(): void
 }
 
-const PROFILE_OPTIONS: ReadonlyArray<readonly [ProfileId, string]> = [
-  ['aktivace', 'Aktivace (SOTA/POTA/WWFF)'],
-  ['obecny', 'Obecný'],
-  ['vkv', 'VKV závod'],
+const PROFILE_OPTIONS = (): ReadonlyArray<readonly [ProfileId, string]> => [
+  ['aktivace', t('newlog.profileAktivace')],
+  ['obecny', t('newlog.profileObecny')],
+  ['vkv', t('newlog.profileVkv')],
 ]
 const BAND_OPTIONS = BANDS.map((b) => [b, b] as const)
 const MODE_OPTIONS = MODES.map((m) => [m, m] as const)
@@ -43,14 +44,13 @@ export class NewLogScreen implements Screen {
     const rememberedCall = (await this.platform.getSetting('myCall')) ?? prev.myCall
     const rememberedGrid = (await this.platform.getSetting('myGrid')) ?? prev.myGrid
 
-    const name = fieldRow('Název', '', { placeholder: 'SOTA OK/ZC-001' })
-    const profile = selectRow('Profil', PROFILE_OPTIONS, prev.profile)
-    const myCall = fieldRow('Moje volačka', rememberedCall)
-    const myGrid = fieldRow('Můj locator', rememberedGrid)
-    const myRef = fieldRow('Moje reference', '', { placeholder: 'OK/ZC-001 — jen Aktivace' })
-    const report = fieldRow('Výchozí report', prev.defaultReport)
-    const band = selectRow('Pásmo', BAND_OPTIONS, prev.defaultSignal.band)
-    const mode = selectRow('Mód', MODE_OPTIONS, prev.defaultSignal.mode)
+    const name = fieldRow(t('newlog.name'), '', { placeholder: t('newlog.namePlaceholder') })
+    const profile = selectRow(t('newlog.profile'), PROFILE_OPTIONS(), prev.profile)
+    const myCall = fieldRow(t('newlog.myCall'), rememberedCall)
+    const myGrid = fieldRow(t('newlog.myGrid'), rememberedGrid)
+    const myRef = fieldRow(t('newlog.myRef'), '', { placeholder: t('newlog.myRefPlaceholder') })
+    const band = selectRow(t('newlog.band'), BAND_OPTIONS, prev.defaultSignal.band)
+    const mode = selectRow(t('newlog.mode'), MODE_OPTIONS, prev.defaultSignal.mode)
 
     const collect = (): LogMeta => {
       const profileId = profile.select.value as ProfileId
@@ -59,7 +59,6 @@ export class NewLogScreen implements Screen {
         profile: profileId,
         myCall: myCall.input.value.trim().toUpperCase(),
         myGrid: myGrid.input.value.trim().toUpperCase(),
-        defaultReport: report.input.value.trim() || '59',
         defaultSignal: {
           band: matchBand(band.select.value) ?? prev.defaultSignal.band,
           mode: matchMode(mode.select.value) ?? prev.defaultSignal.mode,
@@ -73,18 +72,17 @@ export class NewLogScreen implements Screen {
 
     const actions = el('div', 'form-actions')
     actions.append(
-      button('Založit', () => void this.create(collect()), 'btn btn--primary'),
-      button('Zrušit', () => this.nav.cancel(), 'btn'),
+      button(t('newlog.create'), () => void this.create(collect()), 'btn btn--primary'),
+      button(t('common.cancel'), () => this.nav.cancel(), 'btn'),
     )
 
     this.root.replaceChildren(
-      el('div', 'bar', 'Nový log'),
+      el('div', 'bar', t('newlog.title')),
       name.row,
       profile.row,
       myCall.row,
       myGrid.row,
       myRef.row,
-      report.row,
       band.row,
       mode.row,
       actions,
@@ -113,7 +111,6 @@ export class NewLogScreen implements Screen {
       profile: 'aktivace',
       myCall: '',
       myGrid: '',
-      defaultReport: '59',
       defaultSignal: { band: '40m', mode: 'SSB' },
     }
   }

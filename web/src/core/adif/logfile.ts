@@ -13,7 +13,6 @@ const A = {
   MYCALL: 'APP_KLOG_MYCALL',
   MYGRID: 'APP_KLOG_MYGRID',
   MYREF: 'APP_KLOG_MYREF',
-  DEFREPORT: 'APP_KLOG_DEFREPORT',
   DEFBAND: 'APP_KLOG_DEFBAND',
   DEFMODE: 'APP_KLOG_DEFMODE',
   DEFBANDRX: 'APP_KLOG_DEFBANDRX',
@@ -30,7 +29,6 @@ function metaFields(meta: LogMeta): string[] {
     writeField(A.PROFILE, meta.profile),
     writeField(A.MYCALL, meta.myCall),
     writeField(A.MYGRID, meta.myGrid),
-    writeField(A.DEFREPORT, meta.defaultReport),
     writeField(A.DEFBAND, s.band),
     writeField(A.DEFMODE, s.mode),
   ]
@@ -76,7 +74,6 @@ function metaFromHeader(h: Record<string, string>): LogMeta {
     profile,
     myCall: h[A.MYCALL] ?? '',
     myGrid: h[A.MYGRID] ?? '',
-    defaultReport: h[A.DEFREPORT] ?? '59',
     defaultSignal: signal,
   }
   const myRefRaw = h[A.MYREF]

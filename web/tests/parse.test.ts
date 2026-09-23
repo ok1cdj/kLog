@@ -44,40 +44,48 @@ describe('ch. 9.4 worked examples (full-line reduction)', () => {
 })
 
 describe('VKV contest exchange (ch. 9 #7)', () => {
-  it('59002 on SSB splits into RX report 59 + serial 002', () => {
-    const r = parseLine('OK1ABC 59002', { band: '2m', mode: 'SSB' }, {}, PROFILES.vkv)
-    expect(r.partial.reportRcvd).toBe('59')
-    expect(r.partial.serial).toBe('002')
+  it('a bare number is the serial — including > 99 (123 is serial 123, not 12+3)', () => {
+    for (const [line, serial] of [
+      ['OK1ABC 001', '001'],
+      ['OK1ABC 123', '123'],
+      ['OK1ABC 1234', '1234'],
+    ] as const) {
+      const r = parseLine(line, { band: '2m', mode: 'FM' }, {}, PROFILES.vkv)
+      expect(r.partial.serial).toBe(serial)
+      expect(r.partial.reportRcvd).toBeUndefined() // → default 59 (FM) at commit
+    }
   })
 
-  it('599002 on CW splits into RX report 599 + serial 002', () => {
+  it('joined report override: 58123 → report 58 + serial 123 (SSB/FM, first 2 chars)', () => {
+    const r = parseLine('OK1ABC 58123', { band: '2m', mode: 'FM' }, {}, PROFILES.vkv)
+    expect(r.partial.reportRcvd).toBe('58')
+    expect(r.partial.serial).toBe('123')
+  })
+
+  it('joined override on CW: 599002 → report 599 + serial 002 (first 3 chars)', () => {
     const r = parseLine('OK1ABC 599002', { band: '2m', mode: 'CW' }, {}, PROFILES.vkv)
     expect(r.partial.reportRcvd).toBe('599')
     expect(r.partial.serial).toBe('002')
   })
 
-  it('space-separated exchange 59 002 JN99 → report + serial + locator', () => {
-    const r = parseLine('OK1ABC 59 002 JN99', { band: '2m', mode: 'SSB' }, {}, PROFILES.vkv)
-    expect(r.partial.reportRcvd).toBe('59')
-    expect(r.partial.serial).toBe('002')
-    expect(r.partial.grid).toBe('JN99')
+  it('spaced report + serial: 59 001, 55 002, CW 599 002', () => {
+    const a = parseLine('OK1ABC 59 001', { band: '2m', mode: 'FM' }, {}, PROFILES.vkv)
+    expect(a.partial).toMatchObject({ reportRcvd: '59', serial: '001' })
+    const b = parseLine('OK1ABC 55 002', { band: '2m', mode: 'FM' }, {}, PROFILES.vkv)
+    expect(b.partial).toMatchObject({ reportRcvd: '55', serial: '002' })
+    const c = parseLine('OK1ABC 599 002', { band: '2m', mode: 'CW' }, {}, PROFILES.vkv)
+    expect(c.partial).toMatchObject({ reportRcvd: '599', serial: '002' })
   })
 
-  it('space-separated on CW: 599 002 → report 599 + serial 002', () => {
-    const r = parseLine('OK1ABC 599 002', { band: '2m', mode: 'CW' }, {}, PROFILES.vkv)
-    expect(r.partial.reportRcvd).toBe('599')
-    expect(r.partial.serial).toBe('002')
+  it('full form 58123 JN99CL → report + serial + locator', () => {
+    const r = parseLine('OK1ABC 58123 JN99CL', { band: '2m', mode: 'FM' }, {}, PROFILES.vkv)
+    expect(r.partial).toMatchObject({ reportRcvd: '58', serial: '123', grid: 'JN99CL' })
   })
 
-  it('uses the mode changed earlier on the same line', () => {
-    const r = parseLine('cw OK1ABC 599002', { band: '2m', mode: 'SSB' }, {}, PROFILES.vkv)
-    expect(r.partial.reportRcvd).toBe('599')
-    expect(r.partial.serial).toBe('002')
-  })
-
-  it('preserves the serial leading zeros as a string', () => {
-    const r = parseLine('OK1ABC 590001', { band: '2m', mode: 'SSB' }, {}, PROFILES.vkv)
-    expect(r.partial.serial).toBe('0001')
+  it('a zero-padded serial is always the serial (0123), never a report prefix', () => {
+    const r = parseLine('OK1ABC 0123', { band: '2m', mode: 'FM' }, {}, PROFILES.vkv)
+    expect(r.partial.serial).toBe('0123')
+    expect(r.partial.reportRcvd).toBeUndefined()
   })
 
   it('in a non-contest profile a bare number stays the whole RX report', () => {

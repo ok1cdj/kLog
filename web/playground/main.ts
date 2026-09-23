@@ -49,7 +49,6 @@ function makeMeta(profile: ProfileId): LogMeta {
     profile,
     myCall: 'OK1CDJ',
     myGrid: 'JN79US',
-    defaultReport: '59',
     defaultSignal: { band: '40m', mode: 'SSB' },
   }
   return profile === 'aktivace' ? { ...base, myRef: { kind: 'SOTA', value: 'OK/ZC-001' } } : base

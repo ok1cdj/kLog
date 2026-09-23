@@ -1,6 +1,7 @@
 // Assemble a committed Qso from the accumulator + sticky + log header (ch. 11 commit).
 
 import type { LogMeta, PartialQso, Qso, Signal, StickyState } from './model'
+import { defaultReport } from './model'
 
 /** Apply an HHMM manual time override (ch. 11) onto a base UTC instant. */
 function applyTimeOverride(base: Date, hhmm: string): Date {
@@ -33,8 +34,8 @@ export function buildQso(partial: PartialQso, sticky: StickyState, meta: LogMeta
     timeOn,
     signal,
     report: {
-      sent: partial.reportSent ?? meta.defaultReport,
-      rcvd: partial.reportRcvd ?? meta.defaultReport,
+      sent: partial.reportSent ?? defaultReport(sticky.mode),
+      rcvd: partial.reportRcvd ?? defaultReport(sticky.mode),
     },
     stationCall: meta.myCall,
     myGrid: meta.myGrid,

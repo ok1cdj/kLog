@@ -3,6 +3,7 @@
 // Shown once per load, dismissible.
 
 import { el, button } from './dom'
+import { t } from './i18n'
 
 export function showInstallHintIfNeeded(): void {
   const nav = navigator as unknown as { standalone?: boolean }
@@ -14,7 +15,7 @@ export function showInstallHintIfNeeded(): void {
 
   const bar = el('div', 'install-hint')
   bar.append(
-    el('span', undefined, 'Pro offline provoz a jistotu dat: Sdílet → Přidat na plochu.'),
+    el('span', undefined, t('install.text')),
     button('×', () => bar.remove(), 'btn btn--small'),
   )
   document.body.append(bar)

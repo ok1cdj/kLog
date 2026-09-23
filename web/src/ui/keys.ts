@@ -23,7 +23,8 @@ export const KEY_ROWS: readonly (readonly KeyDef[])[] = [
   letters('GHIJKL'),
   letters('MNOPQR'),
   letters('STUVWX'),
-  [...letters('YZ'), char('/'), { label: '⌫', action: { type: 'backspace' } }, { label: '␣', action: { type: 'space' }, wide: true }],
+  // Backspace is double-width (used far more than space); space is single.
+  [...letters('YZ'), char('/'), { label: '␣', action: { type: 'space' } }, { label: '⌫', action: { type: 'backspace' }, wide: true }],
   letters('123456'),
   [...letters('7890'), { label: '↵', action: { type: 'enter' }, wide: true }],
 ]

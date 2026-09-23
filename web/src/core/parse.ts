@@ -51,23 +51,27 @@ export function parseLine(
         next.reportSent = cls.value
         break
       case 'number': {
-        // ch. 9 #7. VKV contest exchange is report + serial. It may be one token
-        // (59002 → 59 + 002; on CW 599002 → 599 + 002) or two (59 002). The report
-        // width is the mode's RST width (3 for CW, 2 otherwise) — same QSO.
+        // ch. 9 #7. VKV contest exchange is report + serial, in one token (59001)
+        // or two (59 001), and the serial can stand alone (001 → report defaults).
+        // Disambiguation: contest serials are zero-padded (001), RST reports never
+        // are (59/599). The report width is the mode's RST width.
         if (profile.serialAfterCall) {
+          // A bare number is the SERIAL by default (so 123 is serial 123, not 12+3).
+          // To send a report other than 59, join it with a 3-digit serial: 58123 →
+          // report 58 + serial 123. A spaced report+serial (59 001) also works, and a
+          // leading zero always means "this is the serial" (reports never start with 0).
           const reportLen = nextSticky.mode === 'CW' ? 3 : 2
-          if (next.reportRcvd === undefined) {
-            if (cls.value.length > reportLen) {
-              // combined token: split report + serial
-              next.reportRcvd = cls.value.slice(0, reportLen)
-              next.serial = cls.value.slice(reportLen)
-            } else {
-              // a short first number is the report (serial follows in a later token)
-              next.reportRcvd = cls.value
-            }
+          const prev = next.serial
+          if (next.reportRcvd === undefined && prev !== undefined && prev.length === reportLen && !prev.startsWith('0')) {
+            next.reportRcvd = prev // an earlier report-shaped number was the report…
+            next.serial = cls.value //   …and this token is the serial
+          } else if (cls.value.startsWith('0')) {
+            next.serial = cls.value // 002 → serial; report stays default
+          } else if (next.reportRcvd === undefined && cls.value.length === reportLen + 3) {
+            next.reportRcvd = cls.value.slice(0, reportLen) // 58123 → report 58
+            next.serial = cls.value.slice(reportLen) //         + serial 123
           } else {
-            // report already captured → this number is the serial
-            next.serial = cls.value
+            next.serial = cls.value // 123, 1234 → serial
           }
         } else {
           next.reportRcvd = cls.value

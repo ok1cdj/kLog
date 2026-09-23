@@ -71,8 +71,12 @@ export interface LogMeta {
   readonly myCall: string // "Moje volačka" — always required
   readonly myGrid: string // "Můj locator"
   readonly myRef?: AwardReference // "Moje reference" — Aktivace only
-  readonly defaultReport: string // "Výchozí report", default "59" (ch. 8)
   readonly defaultSignal: Signal // "Pásmo / mód" — sticky seed (ch. 8)
+}
+
+/** Default RST for a mode (ch. 8): 599 on CW, 59 otherwise. Not configurable. */
+export function defaultReport(mode: string): string {
+  return mode === 'CW' ? '599' : '59'
 }
 
 /** Sticky state carried across input lines until an explicit change (ch. 9.3). */

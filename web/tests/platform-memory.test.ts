@@ -9,7 +9,6 @@ const meta: LogMeta = {
   myCall: 'OK1CDJ',
   myGrid: 'JN79US',
   myRef: { kind: 'SOTA', value: 'OK/ZC-001' },
-  defaultReport: '59',
   defaultSignal: { band: '40m', mode: 'SSB' },
 }
 

@@ -7,7 +7,6 @@ const meta: LogMeta = {
   profile: 'obecny',
   myCall: 'OK1CDJ',
   myGrid: 'JN79US',
-  defaultReport: '59',
   defaultSignal: { band: '40m', mode: 'SSB' },
 }
 

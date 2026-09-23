@@ -4,6 +4,7 @@
 import type { KLogPlatform, LogSummary } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
+import { t } from '../i18n'
 
 export interface LogListNav {
   openLog(id: string): void
@@ -31,13 +32,13 @@ export class LogListScreen implements Screen {
     const top = el('div', 'bar')
     top.append(
       el('h1', 'title', 'kLog'),
-      button('+ Nový log', () => this.nav.newLog(), 'btn btn--primary'),
+      button(t('loglist.new'), () => this.nav.newLog(), 'btn btn--primary'),
       button('⚙', () => this.nav.openSettings(), 'btn btn--icon'),
     )
 
     const list = el('ul', 'loglist')
     if (logs.length === 0) {
-      list.append(el('li', 'empty', 'Zatím žádný log — založ nový.'))
+      list.append(el('li', 'empty', t('loglist.empty')))
     } else {
       for (const log of logs) list.append(this.row(log))
     }
@@ -47,14 +48,14 @@ export class LogListScreen implements Screen {
   private row(log: LogSummary): HTMLElement {
     const li = el('li', 'logrow')
     const open = button(`${log.name}  ·  ${log.qsoCount} QSO`, () => this.nav.openLog(log.id), 'logrow-open')
-    const exp = button('export', () => void this.platform.exportLog(log.id, `${log.id}.adi`), 'btn btn--small')
-    const del = button('smazat', () => void this.remove(log), 'btn btn--small')
+    const exp = button(t('loglist.export'), () => void this.platform.exportLog(log.id, `${log.id}.adi`), 'btn btn--small')
+    const del = button(t('loglist.delete'), () => void this.remove(log), 'btn btn--small')
     li.append(open, exp, del)
     return li
   }
 
   private async remove(log: LogSummary): Promise<void> {
-    if (!confirm(`Smazat log "${log.name}" (${log.qsoCount} QSO)? Nelze vrátit.`)) return
+    if (!confirm(t('loglist.deleteConfirm', { name: log.name, count: log.qsoCount }))) return
     await this.platform.deleteLog(log.id)
     await this.render()
   }

@@ -5,6 +5,7 @@ import type { Qso } from '../../core/index'
 import type { KLogPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
+import { t } from '../i18n'
 
 export interface QsoListNav {
   back(): void
@@ -35,11 +36,14 @@ export class QsoListScreen implements Screen {
     const { meta, qsos } = readLogFile(await this.platform.readLog(this.logId))
 
     const bar = el('div', 'bar')
-    bar.append(button('‹ zpět', () => this.nav.back(), 'hdr-nav'), el('b', 'title', `${meta.name} · ${qsos.length} QSO`))
+    bar.append(
+      button(`‹ ${t('common.back')}`, () => this.nav.back(), 'hdr-nav'),
+      el('b', 'title', `${meta.name} · ${qsos.length} QSO`),
+    )
 
     const list = el('ul', 'qsolist')
     if (qsos.length === 0) {
-      list.append(el('li', 'empty', 'Zatím žádné QSO.'))
+      list.append(el('li', 'empty', t('qsolist.empty')))
     } else {
       qsos.forEach((q, i) => list.append(this.row(q, i)))
     }

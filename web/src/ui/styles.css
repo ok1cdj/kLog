@@ -156,6 +156,12 @@ body {
   border: 1px solid var(--fg);
   text-decoration: line-through;
 }
+/* Expected-but-empty field (e.g. VKV serial not yet entered). */
+.tok--missing {
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px dashed var(--muted);
+}
 
 /* --- strip (last QSO / suggestions / prefill) ----------------------------- */
 
@@ -387,6 +393,30 @@ body {
   color: var(--muted);
   font-size: 0.85rem;
   line-height: 1.5;
+}
+
+/* Help screen. */
+.help h2 {
+  font-size: 0.95rem;
+  margin: 1rem 0 0.3rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.15rem;
+}
+.help-row {
+  margin: 0.35rem 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.help-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0 0.3rem;
+  margin-right: 0.4rem;
+  white-space: nowrap;
+}
+.help-text {
+  color: var(--muted);
 }
 
 /* iOS add-to-home hint (F1.6) — fixed bar at the bottom. */

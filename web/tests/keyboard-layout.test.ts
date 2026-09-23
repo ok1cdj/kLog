@@ -19,13 +19,14 @@ describe('keyboard layout (ch. 5)', () => {
     expect(chars.has('/')).toBe(true)
   })
 
-  it('has exactly one backspace, one space, one enter; space and enter are wide', () => {
+  it('has exactly one backspace, one space, one enter; backspace and enter are wide', () => {
     const byType = (t: string) => KEYS.filter((k) => k.action.type === t)
     expect(byType('backspace')).toHaveLength(1)
     expect(byType('space')).toHaveLength(1)
     expect(byType('enter')).toHaveLength(1)
-    expect(byType('space')[0]!.wide).toBe(true)
+    expect(byType('backspace')[0]!.wide).toBe(true)
     expect(byType('enter')[0]!.wide).toBe(true)
+    expect(byType('space')[0]!.wide).toBeUndefined()
   })
 
   it('each row plus wide keys spans exactly 6 columns', () => {
