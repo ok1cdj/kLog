@@ -396,6 +396,41 @@ body {
   flex-wrap: wrap;
 }
 
+/* Satellite picker (New Log): on-brand tiles instead of a native <select>. */
+.satgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+.satgrid-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  font: inherit;
+  padding: 0.4rem 0.55rem;
+  border: var(--border-w) solid var(--fg);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.satgrid-tile--sel {
+  background: var(--fg);
+  color: var(--bg);
+}
+.satgrid-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.satgrid-band {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
 /* Settings rows. */
 .setting {
   display: flex;

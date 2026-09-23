@@ -33,7 +33,39 @@ const PROFILE_OPTIONS = (): ReadonlyArray<readonly [ProfileId, string]> => [
 ]
 const BAND_OPTIONS = BANDS.map((b) => [b, b] as const)
 const MODE_OPTIONS = MODES.map((m) => [m, m] as const)
-const SAT_OPTIONS = SATELLITES.map((s) => [s.label, s.label] as const)
+
+/**
+ * Satellite picker: an on-brand grid of tiles (bird + uplink↑/downlink↓, "FM" for
+ * repeater birds) instead of a native <select> — one tap, no full-screen OS dialog,
+ * and the bands are visible while choosing. `value()` returns the selected label.
+ */
+function satPicker(selectedLabel: string): { row: HTMLElement; value: () => string } {
+  const row = el('div', 'field')
+  row.append(el('span', 'field-label', t('newlog.satellite')))
+  const grid = el('div', 'satgrid')
+  let current = selectedLabel
+  const tiles = new Map<string, HTMLButtonElement>()
+  const paint = (): void => {
+    for (const [label, tile] of tiles) tile.classList.toggle('satgrid-tile--sel', label === current)
+  }
+  for (const s of SATELLITES) {
+    const tile = el('button', 'satgrid-tile')
+    tile.type = 'button'
+    tile.append(
+      el('b', 'satgrid-name', s.fm ? `${s.label} FM` : s.label),
+      el('span', 'satgrid-band', `${s.up}↑${s.down}↓`),
+    )
+    tile.addEventListener('click', () => {
+      current = s.label
+      paint()
+    })
+    tiles.set(s.label, tile)
+    grid.append(tile)
+  }
+  paint()
+  row.append(grid)
+  return { row, value: () => current }
+}
 
 export class NewLogScreen implements Screen {
   private readonly root = el('form', 'screen screen--form')
@@ -67,11 +99,11 @@ export class NewLogScreen implements Screen {
     const band = selectRow(t('newlog.band'), BAND_OPTIONS, prev.defaultSignal.band)
     const mode = selectRow(t('newlog.mode'), MODE_OPTIONS, prev.defaultSignal.mode)
     // One log per satellite pass — the bird is chosen here, not on the logging screen.
-    const sat = selectRow(t('newlog.satellite'), SAT_OPTIONS, prev.satLabel ?? rememberedSat.label)
+    const sat = satPicker(prev.satLabel ?? rememberedSat.label)
 
     const collect = (): LogMeta => {
       const profileId = profile.select.value as ProfileId
-      const chosenSat = satelliteByLabel(sat.select.value) ?? rememberedSat
+      const chosenSat = satelliteByLabel(sat.value()) ?? rememberedSat
       const meta: { -readonly [K in keyof LogMeta]: LogMeta[K] } = {
         name: name.input.value.trim() || 'Log',
         profile: profileId,
