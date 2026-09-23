@@ -163,12 +163,15 @@ export class NewLogScreen implements Screen {
       actions,
     )
 
-    // Satellite logs pick a bird (which sets band/mode); other profiles pick band/mode.
+    // Show only the fields a profile uses: satellite logs pick a bird (which sets
+    // band/mode); the reference is Activation-only.
     const syncFields = (): void => {
-      const isSat = profile.value() === 'sat'
+      const profileId = profile.value()
+      const isSat = profileId === 'sat'
       band.row.hidden = isSat
       mode.row.hidden = isSat
       sat.row.hidden = !isSat
+      myRef.row.hidden = profileId !== 'aktivace'
     }
     syncFields()
     name.input.focus()
