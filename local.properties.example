@@ -1,0 +1,2 @@
+# Copy to local.properties and set your Android SDK location.
+sdk.dir=/home/YOU/Android/Sdk

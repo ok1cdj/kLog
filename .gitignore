@@ -2,3 +2,10 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+app/src/main/assets/kLog/
+.kotlin/
