@@ -29,11 +29,15 @@ import type { KeyAction } from '../keys'
 export interface LoggingNav {
   toLogList(): void
   toQsoList(): void
+  editQso(index: number): void
   toHelp(): void
 }
 
 const pad2 = (n: number): string => (n < 10 ? '0' + n : String(n))
 const pad3 = (n: number): string => String(n).padStart(3, '0')
+const RECENT_MAX = 30 // wide layout: rows rendered; CSS clips whatever doesn't fit
+// Same breakpoint as the landscape layout in styles.css.
+const WIDE = window.matchMedia('(min-aspect-ratio: 1/1)')
 const hhmm = (d: Date): string => `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`
 
 export class LoggingScreen implements Screen {
@@ -48,8 +52,10 @@ export class LoggingScreen implements Screen {
   private readonly inputEl = el('div', 'inputline')
   private readonly previewEl = el('div', 'preview')
   private readonly stripEl = el('div', 'strip')
+  private readonly recentEl = el('ol', 'recent') // wide layout only (hidden in portrait by CSS)
   private readonly banner = el('div', 'banner')
   private readonly onKeydown = (e: KeyboardEvent): void => this.onHardwareKey(e)
+  private readonly onWideChange = (): void => this.renderStrip()
 
   constructor(
     private readonly platform: KQSOPlatform,
@@ -64,14 +70,16 @@ export class LoggingScreen implements Screen {
     const kb = createKeyboard((a) => this.onKey(a))
     // Portrait band order (ch. 4): header · input · preview · strip · keyboard.
     const screen = el('div', 'screen screen--log')
-    screen.append(this.hdr, this.banner, this.inputEl, this.previewEl, this.stripEl, kb)
+    screen.append(this.hdr, this.banner, this.inputEl, this.previewEl, this.stripEl, this.recentEl, kb)
     root.replaceChildren(screen)
     window.addEventListener('keydown', this.onKeydown)
+    WIDE.addEventListener('change', this.onWideChange)
     void this.init()
   }
 
   unmount(): void {
     window.removeEventListener('keydown', this.onKeydown)
+    WIDE.removeEventListener('change', this.onWideChange)
     this.platform.keepAwake(false)
   }
 
@@ -99,6 +107,7 @@ export class LoggingScreen implements Screen {
     }
     this.platform.keepAwake(true) // ch. 16
     await this.offerRecovery()
+    this.renderRecent()
     this.renderAll()
   }
 
@@ -156,6 +165,7 @@ export class LoggingScreen implements Screen {
       await this.platform.appendQso(this.logId, writeQso(committed))
       await this.platform.clearJournal(this.logId)
       this.qsos.push(committed)
+      this.renderRecent()
       this.db.add(committed)
       this.banner.hidden = true
     } else if (this.state.hasStarted && this.state.partial.call) {
@@ -296,9 +306,24 @@ export class LoggingScreen implements Screen {
         return
       }
     }
-    // Default: last written QSO (ch. 10).
+    // Default: last written QSO (ch. 10). The wide layout already lists it in the
+    // recent-QSO column, so the strip stays empty there.
     const last = this.qsos.length > 0 ? this.qsos[this.qsos.length - 1] : undefined
-    this.stripEl.replaceChildren(document.createTextNode(last ? formatQso(last) : '—'))
+    if (WIDE.matches) this.stripEl.replaceChildren()
+    else this.stripEl.replaceChildren(document.createTextNode(last ? formatQso(last) : '—'))
+  }
+
+  /** Wide layout: the latest QSOs, newest at the bottom next to the input; tap to edit.
+   *  Only re-rendered when the log changes, not per keystroke (e-ink repaints). */
+  private renderRecent(): void {
+    const from = Math.max(0, this.qsos.length - RECENT_MAX)
+    this.recentEl.replaceChildren(
+      ...this.qsos.slice(from).map((q, i) => {
+        const li = el('li')
+        li.append(button(formatQso(q), () => this.nav.editQso(from + i), 'recent-row'))
+        return li
+      }),
+    )
   }
 
   private suggestButton(label: string, onTap: () => void, cls = 'suggest'): HTMLButtonElement {

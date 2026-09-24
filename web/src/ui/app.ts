@@ -65,6 +65,7 @@ export class App {
       new LoggingScreen(this.platform, logId, {
         toLogList: () => this.showLogList(),
         toQsoList: () => this.showQsoList(logId),
+        editQso: (index) => this.showQsoEdit(logId, index, () => this.showLogging(logId)),
         toHelp: () => this.showHelp(() => this.showLogging(logId)),
       }),
     )
@@ -78,15 +79,16 @@ export class App {
     this.show(
       new QsoListScreen(this.platform, logId, {
         back: () => this.showLogging(logId),
-        editQso: (index) => this.showQsoEdit(logId, index),
+        editQso: (index) => this.showQsoEdit(logId, index, () => this.showQsoList(logId)),
       }),
     )
   }
 
-  showQsoEdit(logId: string, index: number): void {
+  /** `back` returns to wherever the edit was opened from (QSO list or logging). */
+  showQsoEdit(logId: string, index: number, back: () => void): void {
     this.show(
       new QsoEditScreen(this.platform, logId, index, {
-        done: () => this.showQsoList(logId),
+        done: back,
       }),
     )
   }

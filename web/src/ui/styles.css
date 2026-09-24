@@ -499,6 +499,34 @@ body {
   z-index: 10;
 }
 
+/* --- recent QSOs (wide layout only) --------------------------------------- */
+
+/* Portrait has no room — the strip shows the last QSO instead. In the wide layout
+   the column fills the free height; rows stack from the bottom (newest next to the
+   input) and the oldest overflow off the top, clipped. */
+.recent {
+  display: none;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.recent-row {
+  width: 100%;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  padding: 0.35rem 0.4rem;
+  border: 0;
+  border-bottom: var(--border-w) solid var(--line);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+
 /* --- landscape / wide (ch. 4): log area left, keyboard right -------------- */
 
 @media (min-aspect-ratio: 1/1) {
@@ -508,7 +536,7 @@ body {
     grid-template-areas:
       'hdr     kb'
       'strip   kb'
-      'spacer  kb'
+      'recent  kb'
       'input   kb'
       'preview kb';
   }
@@ -517,6 +545,14 @@ body {
   }
   .strip {
     grid-area: strip;
+  }
+  /* Idle strip (no suggestions) has nothing to show here — hide the empty frame. */
+  .strip:empty {
+    border-color: transparent;
+  }
+  .recent {
+    grid-area: recent;
+    display: flex;
   }
   .inputline {
     grid-area: input;
