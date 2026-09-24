@@ -5,11 +5,14 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
+import android.webkit.ConsoleMessage
 import android.webkit.JsResult
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
@@ -43,6 +46,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Debug builds: allow chrome://inspect and forward JS console to logcat.
+        if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
+
         // The web build (base /kLog/, shared with GitHub Pages) is bundled at
         // assets/kLog/; serve the whole assets root so /kLog/... resolves.
         val loader = WebViewAssetLoader.Builder()
@@ -52,6 +58,10 @@ class MainActivity : ComponentActivity() {
         webView = WebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
+            // Assets are local (WebViewAssetLoader) — never cache. A cached index.html
+            // from a previous APK points at asset hashes the update no longer ships →
+            // blank screen; disabling the HTTP cache keeps every launch on the shipped build.
+            settings.cacheMode = WebSettings.LOAD_NO_CACHE
             settings.allowFileAccess = false
             settings.allowContentAccess = false
             addJavascriptInterface(KLogBridge(this@MainActivity), "KLogNative")
@@ -64,6 +74,11 @@ class MainActivity : ComponentActivity() {
             // Without a WebChromeClient the WebView silently suppresses window.alert /
             // confirm — which would break delete confirmations and the export prompt.
             webChromeClient = object : WebChromeClient() {
+                override fun onConsoleMessage(m: ConsoleMessage): Boolean {
+                    Log.i("kLogWeb", "${m.messageLevel()} ${m.message()} @${m.sourceId()}:${m.lineNumber()}")
+                    return true
+                }
+
                 override fun onJsAlert(view: WebView?, url: String?, message: String?, result: JsResult): Boolean {
                     AlertDialog.Builder(this@MainActivity)
                         .setMessage(message)
