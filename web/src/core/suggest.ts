@@ -1,13 +1,17 @@
-// Callsign suggestion source (ch. 10 strip, ch. 19.3 forward-compat). The strip
-// queries this interface instead of the logs directly, so a second source (an
-// external call↔locator database) is later just one more implementation, not a
-// UI change. F1.3 wires the empty source; F1.4 adds the log-history source.
+// Callsign suggestion source. The strip and the locator prefill query this one
+// interface, never the storage directly, so another source (e.g. a new bundled
+// set) is one more implementation, not a UI change. See calldb.ts.
+
+import type { Entry } from './calldb'
 
 export interface SuggestionSource {
-  /** Up to a few callsigns whose text contains `fragment` (already uppercased). */
-  suggest(fragment: string): readonly string[]
+  /** Exact match — for prefill. */
+  lookup(call: string): Entry | undefined
+  /** Calls containing `fragment` (≥2 chars), best first — for the strip. */
+  search(fragment: string, limit: number): Entry[]
 }
 
 export const emptySuggestions: SuggestionSource = {
-  suggest: () => [],
+  lookup: () => undefined,
+  search: () => [],
 }

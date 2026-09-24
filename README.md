@@ -21,9 +21,12 @@ desktop.
 - **Phase 2 — Android shell (`app/`):** complete. WebView + native `KQSONative`
   bridge (logs as real `.adi` files in app storage, SAF export, `ACTION_SEND` share,
   keep-screen-on, e-ink hardcoded); signed release APK built by CI on a `v*` tag.
+- **Callsign database:** suggestions and locator prefill from a bundled set per
+  profile (VHF contest / chasers / satellites) plus your own worked stations, kept
+  apart from the logs; export/import (merge) in Settings.
 - **Phase 3 — later:** full VHF-contest engine (QRB, scoring, EDI/REG1TEST export),
-  ADIF import, Wavelog sync, satellite QSOs. The data model and interfaces are
-  already prepared for these.
+  Wavelog sync. The data model and interfaces are already prepared for these.
+  (Satellite QSOs are done; ADIF import is out of scope.)
 
 ## How to log
 

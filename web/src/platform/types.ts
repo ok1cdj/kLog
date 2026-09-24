@@ -35,6 +35,8 @@ export interface KQSOPlatform {
   clearJournal(logId: string): Promise<void> // after a commit
 
   exportLog(logId: string, filename: string): Promise<void>
+  /** Save arbitrary text as a file the user picks/downloads (callsign DB export). */
+  exportText(content: string, filename: string): Promise<void>
   shareLog(logId: string, filename: string): Promise<void>
   keepAwake(on: boolean): void
 
@@ -43,6 +45,11 @@ export interface KQSOPlatform {
   // own meta in the .adi. All storage still goes through the platform (ch. 12).
   getSetting(key: string): Promise<string | null>
   setSetting(key: string, value: string): Promise<void>
+
+  // Callsign database, live layer (calldb.ts): ONE app-wide TSV file, separate from
+  // the logs — deleting logs never touches it.
+  readCallDb(): Promise<string> // '' when none yet
+  writeCallDb(text: string): Promise<void>
 
   /** Whether storage is persistent, i.e. exempt from WebKit's 7-day eviction (ch. 13). */
   isPersisted(): Promise<boolean>

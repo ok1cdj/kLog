@@ -53,6 +53,9 @@ export type ProfileId = 'vkv' | 'aktivace' | 'obecny' | 'sat'
  * booleans, never branches on the id — so adding a profile is one data entry
  * with no parser change.
  */
+/** Bundled callsign sets (web/src/db/*.tsv). */
+export type BundledDbId = 'vkv' | 'sat' | 'awards'
+
 export interface LogProfile {
   readonly id: ProfileId
   readonly serialAfterCall: boolean // ch. 9 #7: a number after the call is a serial (vkv) vs received report (others)
@@ -60,13 +63,14 @@ export interface LogProfile {
   readonly usesReferences: boolean // Aktivace only (ch. 7, 14)
   readonly fixedBand: boolean // Satellite: band comes from the bird, ignore typed band tokens
   readonly requiresGrid: boolean // VKV contest: own + worked locator are mandatory (QRB scoring)
+  readonly bundledDb: BundledDbId | null // base callsign set for suggestions (calldb.ts); null = live layer only
 }
 
 export const PROFILES: Readonly<Record<ProfileId, LogProfile>> = Object.freeze({
-  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false, requiresGrid: true }),
-  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false, requiresGrid: false }),
-  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false, requiresGrid: false }),
-  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true, requiresGrid: false }),
+  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false, requiresGrid: true, bundledDb: 'vkv' }),
+  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false, requiresGrid: false, bundledDb: 'awards' }),
+  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false, requiresGrid: false, bundledDb: null }),
+  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true, requiresGrid: false, bundledDb: 'sat' }),
 })
 
 /** Log-creation payload (ch. 8 header + ch. 9.3 sticky "my-*" source). Storage-agnostic. */

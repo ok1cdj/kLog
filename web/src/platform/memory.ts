@@ -15,6 +15,7 @@ export class MemoryPlatform implements KQSOPlatform {
   // displayMode omitted → undefined (web/memory does not force a mode, ch. 3)
   private readonly logs = new Map<string, Entry>()
   private readonly settings = new Map<string, string>()
+  private callDb = ''
   private counter = 0
 
   async listLogs(): Promise<LogSummary[]> {
@@ -67,6 +68,18 @@ export class MemoryPlatform implements KQSOPlatform {
 
   async shareLog(): Promise<void> {
     /* no-op in memory */
+  }
+
+  async exportText(): Promise<void> {
+    /* no-op in memory */
+  }
+
+  async readCallDb(): Promise<string> {
+    return this.callDb
+  }
+
+  async writeCallDb(text: string): Promise<void> {
+    this.callDb = text
   }
 
   keepAwake(): void {

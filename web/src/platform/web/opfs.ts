@@ -130,6 +130,18 @@ export class WebPlatform implements KQSOPlatform {
     download(content, filename)
   }
 
+  async exportText(content: string, filename: string): Promise<void> {
+    download(content, filename)
+  }
+
+  readCallDb(): Promise<string> {
+    return this.call<string>({ op: 'readCallDb' })
+  }
+
+  async writeCallDb(text: string): Promise<void> {
+    await this.call<void>({ op: 'writeCallDb', content: text })
+  }
+
   async shareLog(logId: string, filename: string): Promise<void> {
     const content = await this.readLog(logId)
     const file = new File([content], filename, { type: 'text/plain' })

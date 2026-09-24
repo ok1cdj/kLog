@@ -1,6 +1,6 @@
 // Logging screen (ch. 4, 5, 10, 11). Real input line without <input>; two-phase
-// Enter; DUPE warning; strip suggestions + locator/name prefill from the call
-// database; crash-journal mirror. One specific log, passed in by the App.
+// Enter; DUPE warning; strip suggestions + locator prefill from the callsign
+// database (bundled set + live layer, calldb.ts); crash-journal mirror. One specific log, passed in by the App.
 
 import {
   tokenize,
@@ -10,7 +10,11 @@ import {
   initialState,
   writeQso,
   readLogFile,
-  buildCallDatabase,
+  LiveDb,
+  combineSources,
+  dbDate,
+  emptySuggestions,
+  userHeader,
   isDupe,
   defaultReport,
   applySatellite,
@@ -18,10 +22,11 @@ import {
   SATELLITES,
   PROFILES,
 } from '../../core/index'
-import type { CallDatabase, CoreState, LogMeta, PartialQso, Qso } from '../../core/index'
+import type { CoreState, SuggestionSource, LogMeta, PartialQso, Qso } from '../../core/index'
 import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
+import { BUNDLED_DB_SETTING, bundledSource } from '../bundled-db'
 import { t } from '../i18n'
 import { createKeyboard } from '../keyboard'
 import type { KeyAction } from '../keys'
@@ -45,7 +50,8 @@ export class LoggingScreen implements Screen {
   private state!: CoreState
   private line = ''
   private qsos: Qso[] = [] // current log, for DUPE + count
-  private db: CallDatabase = buildCallDatabase()
+  private db: SuggestionSource = emptySuggestions
+  private live = new LiveDb() // own worked stations; persisted on every commit
   private satLabel = '' // current satellite (Satellite profile only)
 
   private readonly hdr = el('header', 'hdr')
@@ -84,18 +90,15 @@ export class LoggingScreen implements Screen {
   }
 
   private async init(): Promise<void> {
-    // Build the call database from ALL logs; capture the current log's meta + QSOs.
-    const logs = await this.platform.listLogs()
-    const db = buildCallDatabase()
-    for (const l of logs) {
-      const { meta, qsos } = readLogFile(await this.platform.readLog(l.id))
-      for (const q of qsos) db.add(q)
-      if (l.id === this.logId) {
-        this.meta = meta
-        this.qsos = qsos
-      }
-    }
-    this.db = db
+    const { meta, qsos } = readLogFile(await this.platform.readLog(this.logId))
+    this.meta = meta
+    this.qsos = qsos
+    // Callsign DB: the live layer always; the profile's bundled set unless switched
+    // off in Settings. Read on every mount, so the switch applies without a restart.
+    this.live = LiveDb.fromText(await this.platform.readCallDb())
+    const setId = PROFILES[meta.profile].bundledDb
+    const useBundled = (await this.platform.getSetting(BUNDLED_DB_SETTING)) !== '0'
+    this.db = combineSources(setId && useBundled ? bundledSource(setId) : null, this.live)
     this.state = initialState(this.meta)
     // Satellite log: the bird is fixed at log creation (one log per pass). Apply it
     // so band/mode/SAT_NAME are set; the header just shows it (read-only).
@@ -166,7 +169,8 @@ export class LoggingScreen implements Screen {
       await this.platform.clearJournal(this.logId)
       this.qsos.push(committed)
       this.renderRecent()
-      this.db.add(committed)
+      this.live.record(committed.call, committed.grid, dbDate(committed.timeOn))
+      await this.platform.writeCallDb(this.live.toText(userHeader(new Date())))
       this.banner.hidden = true
     } else if (this.state.hasStarted && this.state.partial.call) {
       await this.platform.writeJournal(this.logId, serialize(this.state.partial))
@@ -278,10 +282,10 @@ export class LoggingScreen implements Screen {
     const frag = this.line.trim()
     // ≥2 chars → callsign suggestions from history (ch. 10).
     if (frag.length >= 2) {
-      const hits = this.db.suggest(frag).slice(0, 3)
+      const hits = this.db.search(frag, 3)
       if (hits.length > 0) {
         this.stripEl.replaceChildren(
-          ...hits.map((call) => {
+          ...hits.map(({ call }) => {
             // Already worked on this band+mode → mark it (inverse), so a dupe stands out.
             const worked = isDupe(this.qsos, call, this.state.sticky.band, this.state.sticky.mode)
             return this.suggestButton(call, () => this.fillCall(call), worked ? 'suggest suggest--worked' : 'suggest')
@@ -290,21 +294,12 @@ export class LoggingScreen implements Screen {
         return
       }
     }
-    // Completed call with known locator/name → prefill chips (ch. 10).
+    // Completed call with a known locator → prefill chip (ch. 10).
     const call = this.state.partial.call
-    if (call) {
-      const info = this.db.lookup(call)
-      const chips: HTMLElement[] = []
-      if (info?.grid && this.state.partial.grid === undefined) {
-        chips.push(this.suggestButton(`+ ${info.grid}`, () => this.fillGrid(info.grid!), 'suggest suggest--ghost'))
-      }
-      if (info?.name && this.state.partial.name === undefined) {
-        chips.push(this.suggestButton(`+ ${info.name}`, () => this.fillName(info.name!), 'suggest suggest--ghost'))
-      }
-      if (chips.length > 0) {
-        this.stripEl.replaceChildren(...chips)
-        return
-      }
+    const loc = call ? this.db.lookup(call)?.loc : undefined
+    if (loc && this.state.partial.grid === undefined) {
+      this.stripEl.replaceChildren(this.suggestButton(`+ ${loc}`, () => this.fillGrid(loc), 'suggest suggest--ghost'))
+      return
     }
     // Default: last written QSO (ch. 10). The wide layout already lists it in the
     // recent-QSO column, so the strip stays empty there.
@@ -344,11 +339,6 @@ export class LoggingScreen implements Screen {
 
   private fillGrid(grid: string): void {
     this.state = { ...this.state, partial: { ...this.state.partial, grid } }
-    this.renderAll()
-  }
-
-  private fillName(name: string): void {
-    this.state = { ...this.state, partial: { ...this.state.partial, name } }
     this.renderAll()
   }
 

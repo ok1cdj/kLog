@@ -13,6 +13,8 @@ export type WorkerRequest =
   | { id: number; op: 'list' }
   | { id: number; op: 'readSettings' }
   | { id: number; op: 'writeSettings'; content: string }
+  | { id: number; op: 'readCallDb' }
+  | { id: number; op: 'writeCallDb'; content: string }
 
 export type WorkerResponse =
   | { id: number; ok: true; value?: unknown }

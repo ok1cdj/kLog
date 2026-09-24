@@ -1,7 +1,9 @@
 // Settings (ch. 15 #5). Display mode is the first item (ch. 3). Also: a link to the
-// "How to log" help, the active storage backend, and About. Language follows
+// "How to log" help, the callsign database (bundled sets, own layer, export/import),
+// the active storage backend, and About. Language follows
 // navigator.language with no in-app switch (ch. 2).
 
+import { LiveDb, dbDate, userHeader } from '../../core/index'
 import { platformKind } from '../../platform/index'
 import type { KQSOPlatform } from '../../platform/index'
 import { currentDisplayMode, setDisplayMode } from '../../theme/mode'
@@ -9,6 +11,7 @@ import type { DisplayMode } from '../../theme/mode'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
 import { t } from '../i18n'
+import { BUNDLED_DB_SETTING, BUNDLED_IDS, bundledInfo } from '../bundled-db'
 
 export interface SettingsNav {
   back(): void
@@ -20,6 +23,12 @@ const STORAGE_KEY: Record<ReturnType<typeof platformKind>, 'settings.storageNati
   opfs: 'settings.storageOpfs',
   memory: 'settings.storageMemory',
 }
+
+const SET_LABEL = {
+  vkv: 'settings.dbSet_vkv',
+  sat: 'settings.dbSet_sat',
+  awards: 'settings.dbSet_awards',
+} as const
 
 export class SettingsScreen implements Screen {
   private readonly root = el('div', 'screen screen--list')
@@ -45,6 +54,7 @@ export class SettingsScreen implements Screen {
       bar,
       this.displayModeSetting(),
       this.helpSetting(),
+      await this.callDbSetting(),
       this.storageSetting(persisted),
       this.about(),
     )
@@ -71,6 +81,74 @@ export class SettingsScreen implements Screen {
     for (const b of Array.from(seg.querySelectorAll<HTMLButtonElement>('button'))) {
       b.setAttribute('aria-pressed', String(b.dataset.mode === mode))
     }
+  }
+
+  /** Callsign DB: bundled-set switch + versions, own layer size, export/import/delete. */
+  private async callDbSetting(): Promise<HTMLElement> {
+    const wrap = el('div', 'setting')
+    const live = LiveDb.fromText(await this.platform.readCallDb())
+    const status = el('div', 'about')
+    const ownLine = el('div', undefined, t('settings.dbOwn', { n: live.size }))
+
+    const seg = el('div', 'segmented')
+    const on = (await this.platform.getSetting(BUNDLED_DB_SETTING)) !== '0'
+    const mk = (value: '1' | '0', label: string): HTMLButtonElement => {
+      const b = button(label, () => {
+        void this.platform.setSetting(BUNDLED_DB_SETTING, value)
+        for (const x of Array.from(seg.querySelectorAll<HTMLButtonElement>('button'))) {
+          x.setAttribute('aria-pressed', String(x === b))
+        }
+      }, 'btn')
+      b.setAttribute('aria-pressed', String((value === '1') === on))
+      return b
+    }
+    seg.append(mk('1', t('common.yes')), mk('0', t('common.no')))
+
+    const sets = el('div', 'about')
+    for (const id of BUNDLED_IDS) {
+      const i = bundledInfo(id)
+      sets.append(el('div', undefined, t('settings.dbSet', { set: t(SET_LABEL[id]), v: i.version, d: i.updated, n: i.count })))
+    }
+
+    const save = async (): Promise<void> => {
+      await this.platform.writeCallDb(live.toText(userHeader(new Date())))
+      ownLine.textContent = t('settings.dbOwn', { n: live.size })
+    }
+    const actions = el('div', 'segmented')
+    actions.append(
+      button(t('settings.dbExport'), () => {
+        void this.platform.exportText(live.toText(userHeader(new Date())), `kqso-calldb-${dbDate(new Date())}.tsv`)
+      }, 'btn'),
+    )
+    // Import is web-only for now: the Android WebView ignores <input type=file>
+    // until the shell implements onShowFileChooser (TODO before v1.1).
+    if (!this.platform.nativeVersion) {
+      const file = el('input')
+      file.type = 'file'
+      file.accept = '.tsv,.txt,text/tab-separated-values,text/plain'
+      file.hidden = true
+      file.addEventListener('change', () => {
+        const f = file.files?.[0]
+        if (!f) return
+        void f.text().then(async (text) => {
+          const n = live.importText(text)
+          await save()
+          status.textContent = t('settings.dbImported', { n })
+          file.value = ''
+        })
+      })
+      actions.append(button(t('settings.dbImport'), () => file.click(), 'btn'), file)
+    }
+    actions.append(
+      button(t('common.delete'), () => {
+        if (!confirm(t('settings.dbClearConfirm', { n: live.size }))) return
+        live.clear()
+        void save().then(() => (status.textContent = ''))
+      }, 'btn'),
+    )
+
+    wrap.append(el('span', 'field-label', t('settings.db')), el('div', undefined, t('settings.dbBundled')), seg, sets, ownLine, actions, status)
+    return wrap
   }
 
   private helpSetting(): HTMLElement {

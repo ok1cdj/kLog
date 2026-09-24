@@ -14,6 +14,7 @@ const dec = new TextDecoder()
 const adi = (id: string): string => `${id}.adi`
 const journal = (id: string): string => `${id}.journal`
 const SETTINGS = '_settings.json' // not a *.adi, so it never shows up in listIds()
+const CALLDB = '_calldb.tsv' // callsign DB live layer — likewise not a log
 
 function root(): Promise<FileSystemDirectoryHandle> {
   return navigator.storage.getDirectory()
@@ -96,6 +97,10 @@ async function handle(req: WorkerRequest): Promise<unknown> {
       return readFile(SETTINGS)
     case 'writeSettings':
       return writeFile(SETTINGS, req.content, false)
+    case 'readCallDb':
+      return readFile(CALLDB)
+    case 'writeCallDb':
+      return writeFile(CALLDB, req.content, false)
   }
 }
 

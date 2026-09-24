@@ -17,6 +17,9 @@ class KQSOBridge(private val activity: MainActivity) {
     private val logsDir: File = File(ctx.filesDir, "logs").apply { mkdirs() }
     private val prefs = ctx.getSharedPreferences("kqso", Context.MODE_PRIVATE)
 
+    // Callsign DB live layer: one file outside logsDir, so deleting logs never touches it.
+    private val callDb: File = File(ctx.filesDir, "calldb.tsv")
+
     private fun adi(id: String) = File(logsDir, "$id.adi")
     private fun journal(id: String) = File(logsDir, "$id.journal")
 
@@ -74,6 +77,15 @@ class KQSOBridge(private val activity: MainActivity) {
 
     @JavascriptInterface
     fun exportLog(id: String, filename: String) = activity.exportFile(read(id), filename)
+
+    @JavascriptInterface
+    fun exportText(content: String, filename: String) = activity.exportFile(content, filename)
+
+    @JavascriptInterface
+    fun readCallDb(): String = if (callDb.exists()) callDb.readText() else ""
+
+    @JavascriptInterface
+    fun writeCallDb(text: String) = callDb.writeText(text)
 
     @JavascriptInterface
     fun shareLog(id: String, filename: String) = activity.shareFile(read(id), filename)

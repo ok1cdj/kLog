@@ -24,6 +24,9 @@ interface NativeBridge {
   getSetting(key: string): string | null
   setSetting(key: string, value: string): void
   exportLog(id: string, filename: string): void
+  exportText(content: string, filename: string): void
+  readCallDb(): string
+  writeCallDb(text: string): void
   shareLog(id: string, filename: string): void
   keepAwake(on: boolean): void
 }
@@ -106,6 +109,18 @@ class NativePlatform implements KQSOPlatform {
 
   async exportLog(logId: string, filename: string): Promise<void> {
     this.raw.exportLog(logId, filename)
+  }
+
+  async exportText(content: string, filename: string): Promise<void> {
+    this.raw.exportText(content, filename)
+  }
+
+  async readCallDb(): Promise<string> {
+    return this.raw.readCallDb()
+  }
+
+  async writeCallDb(text: string): Promise<void> {
+    this.raw.writeCallDb(text)
   }
 
   async shareLog(logId: string, filename: string): Promise<void> {

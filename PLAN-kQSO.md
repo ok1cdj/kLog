@@ -15,6 +15,25 @@ Cosmetic only, no functional change, **no data migration**:
 - keystore file/alias (`klog`) intentionally unchanged
 - version 1.1 (web + APK)
 
+## Callsign database (2026-09-24)
+
+Suggestions/prefill no longer derive from the logs (logs are "log, export, delete").
+Two layers, never merged into one table (`web/src/core/calldb.ts`):
+
+- **base** — bundled read-only TSV per profile (`web/src/db/`: `vkv.tsv` VKV,
+  `awards.tsv` Aktivace, `sat.tsv` Satellite — data pending; Obecný none), inlined
+  via `?raw`. awards keeps the source COUNT so frequent chasers rank first.
+- **live** — `record()` on every commit (call, locator, date, count), one file via
+  `platform.readCallDb/writeCallDb` (web `_calldb.tsv`, APK `files/calldb.tsv`);
+  deleting logs never touches it. Cap 20 000, oldest dropped.
+- TSV `CALL LOC LAST COUNT`, parser tolerant to 1–4 columns. Import merges (newer
+  LAST wins, tie keeps existing, COUNT adds). Search ordered by own count, bundled
+  count, prefix, alphabet. Name prefill dropped.
+- Settings: bundled on/off (applies on next log open, no restart), set versions,
+  own count, Export / Import / Delete.
+- **TODO: Import in the APK** — needs `onShowFileChooser` in `MainActivity.kt`;
+  the button is hidden in the native shell until then.
+
 ## Satellite QSO (F3)
 
 ### Status — implemented & deployed (2026-09-23)

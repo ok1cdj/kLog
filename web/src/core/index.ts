@@ -8,6 +8,7 @@ export type {
   Qso,
   ProfileId,
   LogProfile,
+  BundledDbId,
   LogMeta,
   StickyState,
   TokenClass,
@@ -39,5 +40,5 @@ export type { ParsedLogFile } from './adif/logfile'
 export { emptySuggestions } from './suggest'
 export type { SuggestionSource } from './suggest'
 export { isDupe } from './dupe'
-export { buildCallDatabase } from './calldb'
-export type { CallDatabase, CallInfo } from './calldb'
+export { LiveDb, LIVE_MAX, baseSource, combineSources, dbDate, mergeEntry, parseDb, serializeDb, userHeader } from './calldb'
+export type { Entry, ParsedDb } from './calldb'

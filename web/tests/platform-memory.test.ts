@@ -71,4 +71,14 @@ describe('MemoryPlatform (KQSOPlatform contract)', () => {
     expect(await p.getSetting('myCall')).toBe('OK1CDJ')
     expect(await p.getSetting('myGrid')).toBe('JN79US')
   })
+
+  it('callsign DB is one app-wide file that deleting logs leaves alone', async () => {
+    const p = new MemoryPlatform()
+    expect(await p.readCallDb()).toBe('')
+    const id = await p.createLog(meta)
+    await p.writeCallDb('OK1ABC\tJN79US\t20260924\t1\n')
+    await p.deleteLog(id)
+    expect(await p.listLogs()).toEqual([])
+    expect(await p.readCallDb()).toBe('OK1ABC\tJN79US\t20260924\t1\n')
+  })
 })
