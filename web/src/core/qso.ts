@@ -1,7 +1,7 @@
 // Assemble a committed Qso from the accumulator + sticky + log header (ch. 11 commit).
 
 import type { LogMeta, PartialQso, Qso, Signal, StickyState } from './model'
-import { defaultReport } from './model'
+import { PROFILES, defaultReport } from './model'
 
 /** Apply an HHMM manual time override (ch. 11) onto a base UTC instant. */
 function applyTimeOverride(base: Date, hhmm: string): Date {
@@ -22,6 +22,8 @@ function applyTimeOverride(base: Date, hhmm: string): Date {
  */
 export function buildQso(partial: PartialQso, sticky: StickyState, meta: LogMeta): Qso | null {
   if (!partial.call || !partial.timeOn) return null
+  // VKV contest: no locator → no QSO (the preview already flags LOC as missing).
+  if (PROFILES[meta.profile].requiresGrid && partial.grid === undefined) return null
 
   const timeOn = partial.timeOverride ? applyTimeOverride(partial.timeOn, partial.timeOverride) : partial.timeOn
 

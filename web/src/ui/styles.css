@@ -87,14 +87,6 @@ body {
 .hdr b {
   font-weight: 700;
 }
-.hdr-call {
-  padding: 0 0.4rem;
-  background: var(--fg);
-  color: var(--bg);
-}
-.hdr-idle {
-  color: var(--muted);
-}
 .hdr-nav {
   font: inherit;
   font-size: 0.8rem;
@@ -379,6 +371,14 @@ body {
 .field-label {
   font-size: 0.8rem;
   color: var(--muted);
+}
+.field-error {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+/* No colour on e-ink — a thicker border marks the offending field. */
+.field--error .field-input {
+  border-width: calc(var(--border-w) * 3);
 }
 .field-input {
   font: inherit;

@@ -6,7 +6,9 @@
 import {
   BANDS,
   MODES,
+  PROFILES,
   SATELLITES,
+  isFullLocator,
   matchBand,
   matchMode,
   parseReferenceInput,
@@ -17,13 +19,17 @@ import {
 import type { AwardReference, LogMeta, ProfileId } from '../../core/index'
 import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
-import { el, button, fieldRow, selectRow } from '../dom'
+import { el, button, fieldError, fieldRow, selectRow } from '../dom'
 import { t } from '../i18n'
 
 export interface NewLogNav {
   created(id: string): void
   cancel(): void
 }
+
+const pad2 = (n: number): string => String(n).padStart(2, '0')
+/** Local date as DDMMYYYY — the suggested log name. */
+const dateName = (d: Date): string => `${pad2(d.getDate())}${pad2(d.getMonth() + 1)}${d.getFullYear()}`
 
 const BAND_OPTIONS = BANDS.map((b) => [b, b] as const)
 const MODE_OPTIONS = MODES.map((m) => [m, m] as const)
@@ -110,11 +116,15 @@ export class NewLogScreen implements Screen {
     // from the satellite, so the band/mode selects are hidden for it).
     const rememberedSat = satelliteByLabel((await this.platform.getSetting('satLabel')) ?? '') ?? SATELLITES[0]!
 
-    const name = fieldRow(t('newlog.name'), '', { placeholder: t('newlog.namePlaceholder') })
+    // Default name = today's date (DDMMYYYY), pre-selected so typing overwrites it.
+    const today = dateName(new Date())
+    const name = fieldRow(t('newlog.name'), today, { placeholder: t('newlog.namePlaceholder') })
     // syncFields is defined below; the tile's onChange only fires on tap (after render).
     const profile = tilePicker(t('newlog.profile'), PROFILE_TILES(), prev.profile, () => syncFields())
     const myCall = fieldRow(t('newlog.myCall'), rememberedCall)
     const myGrid = fieldRow(t('newlog.myGrid'), rememberedGrid)
+    // VKV contest can't score QRB without the own locator — block Create until it's valid.
+    const gridError = fieldError(myGrid, t('newlog.myGridRequired'))
     const myRef = fieldRow(t('newlog.myRef'), '', { placeholder: t('newlog.myRefPlaceholder') })
     const band = selectRow(t('newlog.band'), BAND_OPTIONS, prev.defaultSignal.band)
     const mode = selectRow(t('newlog.mode'), MODE_OPTIONS, prev.defaultSignal.mode)
@@ -125,7 +135,7 @@ export class NewLogScreen implements Screen {
       const profileId = profile.value() as ProfileId
       const chosenSat = satelliteByLabel(sat.value()) ?? rememberedSat
       const meta: { -readonly [K in keyof LogMeta]: LogMeta[K] } = {
-        name: name.input.value.trim() || 'Log',
+        name: name.input.value.trim() || today,
         profile: profileId,
         myCall: myCall.input.value.trim().toUpperCase(),
         myGrid: myGrid.input.value.trim().toUpperCase(),
@@ -146,7 +156,14 @@ export class NewLogScreen implements Screen {
 
     const actions = el('div', 'form-actions')
     actions.append(
-      button(t('newlog.create'), () => void this.create(collect()), 'btn btn--primary'),
+      button(t('newlog.create'), () => {
+        const meta = collect()
+        if (PROFILES[meta.profile].requiresGrid && !isFullLocator(meta.myGrid)) {
+          gridError.show()
+          return
+        }
+        void this.create(meta)
+      }, 'btn btn--primary'),
       button(t('common.cancel'), () => this.nav.cancel(), 'btn'),
     )
 
@@ -175,6 +192,7 @@ export class NewLogScreen implements Screen {
     }
     syncFields()
     name.input.focus()
+    name.input.select()
   }
 
   private async create(meta: LogMeta): Promise<void> {

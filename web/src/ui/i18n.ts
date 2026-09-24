@@ -32,6 +32,7 @@ const en = {
   'newlog.satellite': 'Satellite',
   'newlog.myCall': 'My callsign',
   'newlog.myGrid': 'My locator',
+  'newlog.myGridRequired': 'Required for a VHF contest — 6 characters, e.g. JO70FD',
   'newlog.myRef': 'My reference',
   'newlog.myRefPlaceholder': 'OK/ZC-001 — Activation only',
   'newlog.band': 'Band',
@@ -47,6 +48,7 @@ const en = {
   'qsoedit.rstSent': 'RST sent',
   'qsoedit.rstRcvd': 'RST received',
   'qsoedit.locator': 'Locator',
+  'qsoedit.locatorRequired': 'Required for a VHF contest',
   'qsoedit.name': 'Name',
   'qsoedit.serialRcvd': 'Serial received',
   'qsoedit.ref': 'Reference (worked station)',
@@ -75,7 +77,6 @@ const en = {
   'logging.recoverYes': 'recover',
   'logging.recoverNo': 'discard',
   'logging.navLogs': '‹ Logs',
-  'logging.closeExport': 'Close log — export a .adi backup?',
 
   'install.text': 'For offline use and data safety: Share → Add to Home Screen.',
 } as const
@@ -104,6 +105,7 @@ const cs: Record<keyof typeof en, string> = {
   'newlog.satellite': 'Družice',
   'newlog.myCall': 'Moje volačka',
   'newlog.myGrid': 'Můj locator',
+  'newlog.myGridRequired': 'Pro VKV závod povinný — 6 znaků, např. JO70FD',
   'newlog.myRef': 'Moje reference',
   'newlog.myRefPlaceholder': 'OK/ZC-001 — jen Aktivace',
   'newlog.band': 'Pásmo',
@@ -119,6 +121,7 @@ const cs: Record<keyof typeof en, string> = {
   'qsoedit.rstSent': 'RST vyslaný',
   'qsoedit.rstRcvd': 'RST přijatý',
   'qsoedit.locator': 'Locator',
+  'qsoedit.locatorRequired': 'Pro VKV závod povinný',
   'qsoedit.name': 'Jméno',
   'qsoedit.serialRcvd': 'Pořadové číslo přijaté',
   'qsoedit.ref': 'Reference (protistanice)',
@@ -147,7 +150,6 @@ const cs: Record<keyof typeof en, string> = {
   'logging.recoverYes': 'obnovit',
   'logging.recoverNo': 'zahodit',
   'logging.navLogs': '‹ Logy',
-  'logging.closeExport': 'Zavřít log — exportovat zálohu .adi?',
 
   'install.text': 'Pro offline provoz a jistotu dat: Sdílet → Přidat na plochu.',
 }

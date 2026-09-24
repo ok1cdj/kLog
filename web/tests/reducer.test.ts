@@ -87,3 +87,23 @@ describe('timestamp behavior (ch. 11)', () => {
     expect(r.committed!.timeOn.toISOString()).toBe('2026-09-22T09:15:00.000Z')
   })
 })
+
+describe('VKV contest requires a locator', () => {
+  const vkv: LogMeta = { ...meta, profile: 'vkv', defaultSignal: { band: '2m', mode: 'SSB' } }
+  const start = (): CoreState => reduce(initialState(vkv), { type: 'firstKeystroke', at: T }, vkv).state
+
+  it('does not commit without the worked locator, keeps the QSO open', () => {
+    let s = reduce(start(), { type: 'enter', line: 'OK1ABC 59001' }, vkv).state
+    const r = reduce(s, { type: 'enter', line: '' }, vkv)
+    expect(r.committed).toBeUndefined()
+    expect(r.state.partial.call).toBe('OK1ABC')
+    // Adding the locator then commits.
+    s = reduce(r.state, { type: 'enter', line: 'JO70FD' }, vkv).state
+    expect(reduce(s, { type: 'enter', line: '' }, vkv).committed).toMatchObject({ call: 'OK1ABC', grid: 'JO70FD' })
+  })
+
+  it('other profiles still commit call-only', () => {
+    const s = reduce(reduce(initialState(meta), { type: 'firstKeystroke', at: T }, meta).state, { type: 'enter', line: 'OK1ABC' }, meta).state
+    expect(reduce(s, { type: 'enter', line: '' }, meta).committed).toBeDefined()
+  })
+})

@@ -45,7 +45,7 @@ export function reduce(state: CoreState, ev: CoreEvent, meta: LogMeta): ReduceRe
 
   // Empty line.
   if (state.hasStarted) {
-    // Phase 2: try to commit. Requires only a callsign (ch. 11).
+    // Phase 2: try to commit. Requires a callsign (ch. 11) — plus a locator in VKV.
     const committed = buildQso(state.partial, state.sticky, meta)
     if (committed) {
       return {

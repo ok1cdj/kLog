@@ -37,6 +37,27 @@ export function fieldRow(
   return { row, input }
 }
 
+/**
+ * Attach a hidden error line to a field row. `show()` reveals it, marks the row and
+ * focuses the input; typing clears it again. Used for fields a profile requires.
+ */
+export function fieldError(field: { row: HTMLElement; input: HTMLInputElement }, message: string): { show(): void } {
+  const msg = el('span', 'field-error', message)
+  msg.hidden = true
+  field.row.append(msg)
+  field.input.addEventListener('input', () => {
+    msg.hidden = true
+    field.row.classList.remove('field--error')
+  })
+  return {
+    show() {
+      msg.hidden = false
+      field.row.classList.add('field--error')
+      field.input.focus()
+    },
+  }
+}
+
 /** A labelled <select> row for the classic forms (e.g. band, mode, profile). */
 export function selectRow(
   label: string,

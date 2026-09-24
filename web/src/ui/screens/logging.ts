@@ -202,41 +202,29 @@ export class LoggingScreen implements Screen {
 
   private renderHeader(): void {
     const s = this.state.sticky
-    // Show the effective UTC time that will be saved: a manual HHMM override if
-    // typed, otherwise the first-keystroke stamp (both UTC).
-    const ov = this.state.partial.timeOverride
-    const time = ov
-      ? `${ov.slice(0, 2)}:${ov.slice(2)}`
-      : this.state.partial.timeOn
-        ? hhmm(this.state.partial.timeOn)
-        : '--:--'
     const mid = el('div', 'hdr-mid')
     const profile = PROFILES[this.meta.profile]
     if (profile.fixedBand) {
-      // Satellite (chosen at log creation): show it read-only — name first so it
-      // survives clipping on a narrow screen.
-      mid.append(el('b', 'hdr-sat', `${this.satLabel} ${s.band}↑${s.bandRx ?? '?'}↓ ${s.mode}`))
+      // Satellite (chosen at log creation): bird + mode only — the up/down bands are
+      // fixed by the bird and didn't fit the narrow Kompakt header.
+      mid.append(el('b', 'hdr-sat', `${this.satLabel} ${s.mode}`))
     } else {
       mid.append(el('b', undefined, `${s.band} ${s.mode}`))
     }
-    mid.append(callChip(this.state.partial.call), el('b', undefined, `${time}z`))
     // VKV: show the next sent serial so the operator knows what to give out.
     if (profile.serialAfterCall) {
       mid.append(el('b', 'hdr-tx', `TX ${pad3(this.qsos.length + 1)}`))
     }
     this.hdr.replaceChildren(
-      button(t('logging.navLogs'), () => void this.close(), 'hdr-nav'),
+      button(t('logging.navLogs'), () => this.close(), 'hdr-nav'),
       mid,
       button('?', () => this.nav.toHelp(), 'hdr-nav'),
       button(`QSO ${this.qsos.length} ›`, () => this.nav.toQsoList(), 'hdr-nav'),
     )
   }
 
-  /** Leaving the log offers an export — a safety net against WebKit eviction (ch. 13). */
-  private async close(): Promise<void> {
-    if (this.qsos.length > 0 && confirm(t('logging.closeExport'))) {
-      await this.platform.exportLog(this.logId, `${this.logId}.adi`)
-    }
+  // No export prompt on close — it nagged on every exit; export lives in the log list.
+  private close(): void {
     this.nav.toLogList()
   }
 
@@ -354,11 +342,6 @@ const DEFAULT_META: LogMeta = {
   myCall: 'OK1CDJ',
   myGrid: 'JN79US',
   defaultSignal: { band: '40m', mode: 'SSB' },
-}
-
-function callChip(call: string | undefined): HTMLElement {
-  const b = el('b', call ? 'hdr-call' : 'hdr-idle', call ?? '—')
-  return b
 }
 
 // A parse-preview chip showing a QSO field that will be saved. `missing` renders it

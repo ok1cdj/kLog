@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { classifyToken } from '../src/core/classify'
+import { classifyToken, isFullLocator } from '../src/core/classify'
 import type { TokenContext } from '../src/core/classify'
 import { PROFILES } from '../src/core/model'
 
@@ -84,5 +84,14 @@ describe('each ch. 9 rule in isolation', () => {
     expect(
       classifyToken('PETR', ctx({ isFirstToken: false, callSeen: true, profile: PROFILES.aktivace })),
     ).toEqual({ type: 'unknown', raw: 'PETR' })
+  })
+})
+
+describe('isFullLocator', () => {
+  it('accepts only 6-character locators', () => {
+    expect(isFullLocator('JO70FD')).toBe(true)
+    expect(isFullLocator('JO70')).toBe(false)
+    expect(isFullLocator('70FD')).toBe(false)
+    expect(isFullLocator('')).toBe(false)
   })
 })

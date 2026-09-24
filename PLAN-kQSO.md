@@ -31,7 +31,7 @@ the logging screen — a header `<select>` overflowed the narrow Kompakt screen.
 New Log dialog now uses an **on-brand tile grid** (`tilePicker`) for BOTH the
 **profile** and the **satellite** (each sat tile shows `up↑down↓`, "FM" for
 repeaters); tapping selects, no full-screen OS picker. The logging header shows the
-bird **read-only** (`RS-44 2m↑70cm↓ SSB`). `LogMeta.satLabel` (ADIF header
+bird **read-only** (`RS-44 SSB` — up/down bands dropped 2026-09-24, they clipped on the Kompakt). `LogMeta.satLabel` (ADIF header
 `APP_KQSO_SATLABEL`) persists the chosen bird; remembered via `setSetting('satLabel')`.
 
 **Still open:**

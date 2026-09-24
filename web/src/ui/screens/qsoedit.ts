@@ -1,11 +1,11 @@
 // Edit / delete a single QSO (ch. 15 #4). Classic form, not the parser. Saving and
 // deleting rewrite the whole file via rewriteLog() — never append (ch. 13).
 
-import { BANDS, MODES, matchBand, matchMode, parseReferenceInput, readLogFile, writeLogFile } from '../../core/index'
+import { BANDS, MODES, PROFILES, matchBand, matchMode, parseReferenceInput, readLogFile, writeLogFile } from '../../core/index'
 import type { Qso, Signal } from '../../core/index'
 import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
-import { el, button, fieldRow, selectRow } from '../dom'
+import { el, button, fieldError, fieldRow, selectRow } from '../dom'
 import { t } from '../i18n'
 
 // Include the QSO's current value even if it is not a dictionary band/mode (e.g. imported).
@@ -57,6 +57,9 @@ export class QsoEditScreen implements Screen {
     const sent = fieldRow(t('qsoedit.rstSent'), orig.report.sent)
     const rcvd = fieldRow(t('qsoedit.rstRcvd'), orig.report.rcvd)
     const grid = fieldRow(t('qsoedit.locator'), orig.grid ?? '')
+    // Same rule as logging: a VKV-contest QSO can't lose its locator.
+    const gridRequired = PROFILES[meta.profile].requiresGrid
+    const gridError = fieldError(grid, t('qsoedit.locatorRequired'))
     const name = fieldRow(t('qsoedit.name'), orig.name ?? '')
     const serial = fieldRow(t('qsoedit.serialRcvd'), orig.serial ?? '')
     const ref = fieldRow(t('qsoedit.ref'), orig.theirRef?.value ?? '')
@@ -65,7 +68,13 @@ export class QsoEditScreen implements Screen {
 
     const actions = el('div', 'form-actions')
     actions.append(
-      button(t('common.save'), () => void this.save(build()), 'btn btn--primary'),
+      button(t('common.save'), () => {
+        if (gridRequired && !grid.input.value.trim()) {
+          gridError.show()
+          return
+        }
+        void this.save(build())
+      }, 'btn btn--primary'),
       button(t('common.delete'), () => void this.remove(), 'btn btn--danger'),
       button(t('common.back'), () => this.nav.done(), 'btn'),
     )

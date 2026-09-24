@@ -23,6 +23,11 @@ const DIGITS = /^\d+$/ // ch. 9 #7; length bound applied per profile (see below)
 const LOCATOR_FULL = /^[A-R]{2}\d{2}([A-X]{2})?$/ // ch. 9 #8
 const LOCATOR_SHORT = /^\d{2}[A-X]{2}$/ // ch. 9 #8 shortened form
 
+/** A full 6-character locator (e.g. JO70FD) — what a VKV contest needs for QRB. */
+export function isFullLocator(s: string): boolean {
+  return /^[A-R]{2}\d{2}[A-X]{2}$/.test(s)
+}
+
 /**
  * Classify a single raw token. The order of checks is the ch. 9 priority table;
  * the first match wins.

@@ -59,13 +59,14 @@ export interface LogProfile {
   readonly parsesName: boolean // ch. 9 #9: name only in Obecný
   readonly usesReferences: boolean // Aktivace only (ch. 7, 14)
   readonly fixedBand: boolean // Satellite: band comes from the bird, ignore typed band tokens
+  readonly requiresGrid: boolean // VKV contest: own + worked locator are mandatory (QRB scoring)
 }
 
 export const PROFILES: Readonly<Record<ProfileId, LogProfile>> = Object.freeze({
-  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false }),
-  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false }),
-  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false }),
-  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true }),
+  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false, requiresGrid: true }),
+  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false, requiresGrid: false }),
+  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false, requiresGrid: false }),
+  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true, requiresGrid: false }),
 })
 
 /** Log-creation payload (ch. 8 header + ch. 9.3 sticky "my-*" source). Storage-agnostic. */
