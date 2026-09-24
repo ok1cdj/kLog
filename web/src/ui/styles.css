@@ -350,6 +350,12 @@ body {
   color: var(--fg);
   cursor: pointer;
 }
+.logrow-status {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
 .qsorow-open {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.82rem;
@@ -446,6 +452,9 @@ body {
 }
 .segmented .btn {
   flex: 1;
+}
+.segmented--wrap {
+  flex-wrap: wrap;
 }
 .segmented .btn[aria-pressed='true'] {
   background: var(--fg);

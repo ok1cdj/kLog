@@ -15,6 +15,16 @@ Cosmetic only, no functional change, **no data migration**:
 - keystore file/alias (`klog`) intentionally unchanged
 - version 1.1 (web + APK)
 
+## Wavelog push (2026-09-24)
+
+Manual push of a whole log to the user's Wavelog via API v2 (`POST /api/v2/qso`,
+`import_type: "adif"`, Bearer `wl2_` token). Pure part `web/src/core/wavelog.ts`
+(URL normalization, error mapping, push status), fetch in `web/src/ui/wavelog.ts`.
+Settings: URL + token → Connect (checks scopes, lists station profiles) → pick one.
+Log list: "Wavelog" button for `PROFILES[*].wavelogPush` (General/Satellite/VKV,
+never Aktivace) + last result under the name (settings key `wavelog:<logId>`).
+PoC details and the ch. 19.2 spec in `ZADANI-kQSO.md`.
+
 ## Callsign database (2026-09-24)
 
 Suggestions/prefill no longer derive from the logs (logs are "log, export, delete").

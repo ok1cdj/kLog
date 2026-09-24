@@ -525,48 +525,44 @@ Locator se u satelitních spojení vyměňuje běžně a ten už parser umí.
 
 ### 19.2 Synchronizace s Wavelog — plánováno do fáze 3
 
-Push odjetého logu do vlastní Wavelog instance. **Není to nápad, je to plánovaná funkce fáze 3.**
+Push odjetého logu do vlastní Wavelog instance. **Není to nápad, je to plánovaná funkce fáze 3.** Ověřeno PoC proti živé instanci 2026-09-24 (API v2).
 
-**Porušuje pravidlo „žádná síťová komunikace za běhu"**, takže musí být výslovná, uživatelem nakonfigurovaná a ručně spuštěná — stejný model jako `X-API-Key` u kZivyobraz. Nikdy automaticky, nikdy na pozadí, nikdy živě během aktivace. Push po zavření logu, vedle stávající nabídky exportu.
+**Porušuje pravidlo „žádná síťová komunikace za běhu"**, takže musí být výslovná, uživatelem nakonfigurovaná a ručně spuštěná — stejný model jako `X-API-Key` u kZivyobraz. Nikdy automaticky, nikdy na pozadí, nikdy živě během provozu. Tlačítko u logu v seznamu logů, vedle exportu.
 
-#### API
+#### Které logy
+
+Jen **Obecný, Satelit a VKV závod**. **Aktivace (SOTA/POTA/WWFF) se do Wavelogu neposílají** — ty se odesílají jinou cestou (mail, upload na server programu). U aktivačního logu tlačítko není.
+
+Důvod navíc: Wavelog při importu bere údaje o vlastní stanici ze station profilu, ne z ADIF — `STATION_CALLSIGN` a `MY_GRIDSQUARE` přepíše hodnotami profilu a `MY_*_REF` zahodí, když je profil nemá. U aktivace, kde se vlastní reference mění s každou výpravou, by se ztratila.
+
+#### API v2 (Wavelog ≥ 3.1.0)
 
 ```
-POST https://<wavelog>/index.php/api/qso
+POST https://<wavelog>/index.php/api/v2/qso
+Authorization: Bearer wl2_…
 Content-Type: application/json
 
 {
-  "key": "<API_KEY>",
-  "station_profile_id": "<ID>",
-  "type": "adif",
-  "string": "<call:6>OK1ABC<band:3>40m...<eor>"
+  "import_type": "adif",
+  "station_profile_id": 1,
+  "adif": "<CALL:6>OK1ABC<BAND:3>40m...<EOR>"
 }
 ```
 
-`station_profile_id` je číslo z URL při editaci station profilu ve Wavelogu.
+Odpověď: `{"data": {"parsed": 4, "imported": 3, "skipped": 1, "messages": []}}`, HTTP 201.
 
-Dvě vlastnosti API, které to usnadňují: **dupe kontrola probíhá na straně Wavelogu** a **v jednom požadavku jde poslat víc QSO najednou**. Takže „pošli celý ADIF logu" je bezpečná a opakovatelná operace — není potřeba sledovat, co už bylo odesláno.
+- **Token** `wl2_…` se zakládá v uživatelském nastavení Wavelogu (sekce API). Potřebné scopes: `qso:write` a `station:read`. Starší v1 klíče (`wl…`) v2 nepřijímá.
+- **Station profil** se vybírá v nastavení ze seznamu `GET /api/v2/station` (id, název, značka), ne opisováním čísla z URL.
+- **Dupe kontrola probíhá na straně Wavelogu**: duplicity se nevrací jako chyba, ale počítají se do `skipped`. Opakované odeslání celého logu je bezpečné — není potřeba sledovat, co už bylo odesláno. Ověřeno: druhé odeslání → `imported: 0, skipped: 4`.
+- **`"dryrun": true`** projde import bez zápisu (vrací jen `parsed`) — vhodné pro tlačítko „Otestovat spojení" v nastavení.
+- **`GET /api/v2/status`** je veřejný (bez tokenu) — odliší „server nedostupný" od „špatný token" (401 `invalid_token` / `token_expired`, 403 `insufficient_scope`).
+- Převzetí polí ověřeno: `BAND_RX`, `PROP_MODE`, `SAT_NAME`, `SAT_MODE`, `GRIDSQUARE`, `RST_*`, `SRX_STRING`/`STX_STRING`, `SOTA_REF`.
 
-Konfigurace patří do nastavení aplikace, ne do jednotlivého logu: URL, API klíč, station profile ID. Klíč se ukládá lokálně jako všechno ostatní.
+Konfigurace patří do nastavení aplikace, ne do jednotlivého logu: URL, token, station profil. Token se ukládá lokálně jako všechno ostatní; v UI ho po uložení nezobrazovat celý.
 
-#### CORS — dokumentovaný krok nastavení
+#### CORS
 
-Prohlížeč na `apps.ok1cdj.com` volá cizí origin, takže potřebuje od Wavelogu `Access-Control-Allow-Origin`. Není to vlastnost Wavelogu, je to vlastnost prohlížeče, a platí stejně ve WebView v APK.
-
-Protože je Wavelog self-hosted, řeší to uživatel u sebe na serveru:
-
-```nginx
-location /index.php/api/ {
-    add_header Access-Control-Allow-Origin "https://apps.ok1cdj.com" always;
-    add_header Access-Control-Allow-Headers "Content-Type" always;
-    if ($request_method = OPTIONS) { return 204; }
-    # ... stávající konfigurace
-}
-```
-
-Odpověď na `OPTIONS` je povinná: `Content-Type: application/json` dělá z požadavku non-simple, takže prohlížeč nejdřív pošle preflight. Bez odpovědi na něj se vlastní POST vůbec neodešle.
-
-**Tohle musí být v README.** Bez toho funkce tiše nefunguje a nikdo nepozná proč.
+API v2 posílá `Access-Control-Allow-Origin: *` a odpovídá na preflight `OPTIONS` (204) — **na serveru se nic nastavovat nemusí**. Ověřeno pro obě origin: `https://ok1cdj.github.io` (PWA) i `https://appassets.androidplatform.net` (WebView v APK), včetně skutečného `fetch` ze stránky.
 
 #### Mixed content
 
@@ -574,7 +570,7 @@ Instance na `http://` bude z HTTPS stránky zablokovaná bez ohledu na CORS. Fun
 
 #### Chybové stavy
 
-Na kopci není signál a push selže. Nesmí to nic zahodit ani zablokovat — log zůstává lokálně jako doposud, push se dá spustit znovu kdykoli. Zobraz stav odeslání u logu v seznamu, ale neopakuj automaticky.
+Na kopci není signál a push selže. Nesmí to nic zahodit ani zablokovat — log zůstává lokálně jako doposud, push se dá spustit znovu kdykoli. Zobraz stav odeslání u logu v seznamu (např. „Wavelog: 12 nových, 3 duplicity · 24.09. 14:05"), ale neopakuj automaticky.
 
 ### 19.3 Databáze značek a lokátorů
 

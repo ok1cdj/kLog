@@ -24,8 +24,11 @@ desktop.
 - **Callsign database:** suggestions and locator prefill from a bundled set per
   profile (VHF contest / chasers / satellites) plus your own worked stations, kept
   apart from the logs; export/import (merge) in Settings.
-- **Phase 3 — later:** full VHF-contest engine (QRB, scoring, EDI/REG1TEST export),
-  Wavelog sync. The data model and interfaces are already prepared for these.
+- **Wavelog push:** General, Satellite and VHF-contest logs can be sent to your own
+  Wavelog (API v2, Wavelog 3.1+) with one tap in the log list — never automatically;
+  duplicates are skipped by Wavelog, so resending is safe. Set up URL + a `wl2_`
+  token (scopes `qso:write`, `station:read`) in Settings; no server CORS setup needed.
+- **Phase 3 — later:** full VHF-contest engine (QRB, scoring, EDI/REG1TEST export). The data model and interfaces are already prepared for these.
   (Satellite QSOs are done; ADIF import is out of scope.)
 
 ## How to log

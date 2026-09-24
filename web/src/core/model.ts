@@ -64,13 +64,14 @@ export interface LogProfile {
   readonly fixedBand: boolean // Satellite: band comes from the bird, ignore typed band tokens
   readonly requiresGrid: boolean // VKV contest: own + worked locator are mandatory (QRB scoring)
   readonly bundledDb: BundledDbId | null // base callsign set for suggestions (calldb.ts); null = live layer only
+  readonly wavelogPush: boolean // offer the manual Wavelog push (ch. 19.2); activations go elsewhere
 }
 
 export const PROFILES: Readonly<Record<ProfileId, LogProfile>> = Object.freeze({
-  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false, requiresGrid: true, bundledDb: 'vkv' }),
-  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false, requiresGrid: false, bundledDb: 'awards' }),
-  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false, requiresGrid: false, bundledDb: null }),
-  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true, requiresGrid: false, bundledDb: 'sat' }),
+  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false, requiresGrid: true, bundledDb: 'vkv', wavelogPush: true }),
+  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false, requiresGrid: false, bundledDb: 'awards', wavelogPush: false }),
+  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false, requiresGrid: false, bundledDb: null, wavelogPush: true }),
+  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true, requiresGrid: false, bundledDb: 'sat', wavelogPush: true }),
 })
 
 /** Log-creation payload (ch. 8 header + ch. 9.3 sticky "my-*" source). Storage-agnostic. */

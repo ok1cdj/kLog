@@ -3,13 +3,16 @@
 // the active storage backend, and About. Language follows
 // navigator.language with no in-app switch (ch. 2).
 
-import { LiveDb, dbDate, userHeader } from '../../core/index'
+import { LiveDb, WAVELOG_SETTINGS, apiBase, dbDate, userHeader } from '../../core/index'
+import type { WavelogStation } from '../../core/index'
 import { platformKind } from '../../platform/index'
 import type { KQSOPlatform } from '../../platform/index'
 import { currentDisplayMode, setDisplayMode } from '../../theme/mode'
 import type { DisplayMode } from '../../theme/mode'
 import type { Screen } from '../app'
-import { el, button } from '../dom'
+import { el, button, fieldRow } from '../dom'
+import { connect } from '../wavelog'
+import { wavelogErrorText } from '../wavelog-text'
 import { t } from '../i18n'
 import { BUNDLED_DB_SETTING, BUNDLED_IDS, bundledInfo } from '../bundled-db'
 
@@ -55,6 +58,7 @@ export class SettingsScreen implements Screen {
       this.displayModeSetting(),
       this.helpSetting(),
       await this.callDbSetting(),
+      await this.wavelogSetting(),
       this.storageSetting(persisted),
       this.about(),
     )
@@ -151,6 +155,90 @@ export class SettingsScreen implements Screen {
     return wrap
   }
 
+  /**
+   * Wavelog push (ch. 19.2): URL + v2 token → "Connect" checks the token and lists
+   * the station profiles; picking one saves it. The token is never shown back.
+   */
+  private async wavelogSetting(): Promise<HTMLElement> {
+    const wrap = el('div', 'setting')
+    const K = WAVELOG_SETTINGS
+    const savedUrl = (await this.platform.getSetting(K.url)) ?? ''
+    const savedToken = (await this.platform.getSetting(K.token)) ?? ''
+    const savedStation = parseStation(await this.platform.getSetting(K.station))
+
+    const url = fieldRow(t('settings.wlUrl'), savedUrl, { placeholder: 'https://log.example.org' })
+    url.input.autocapitalize = 'off'
+    url.input.inputMode = 'url'
+    const token = fieldRow(t('settings.wlToken'), '', {
+      placeholder: savedToken ? `wl2_…${savedToken.slice(-4)} ${t('settings.wlTokenSaved')}` : 'wl2_…',
+    })
+    token.input.type = 'password'
+    token.input.autocapitalize = 'off'
+    const hint = el('div', 'about', t('settings.wlHint'))
+    const status = el('div', 'about', savedStation ? t('settings.wlStation', { name: stationLabel(savedStation) }) : '')
+    const pick = el('div', 'segmented')
+    pick.hidden = true
+
+    const choose = async (s: WavelogStation): Promise<void> => {
+      await this.platform.setSetting(K.station, JSON.stringify(s))
+      for (const b of Array.from(pick.querySelectorAll<HTMLButtonElement>('button'))) {
+        b.setAttribute('aria-pressed', String(b.dataset.id === String(s.id)))
+      }
+      status.textContent = t('settings.wlStation', { name: stationLabel(s) })
+    }
+
+    const doConnect = async (): Promise<void> => {
+      const tok = token.input.value.trim() || savedToken
+      let base: string
+      try {
+        base = apiBase(url.input.value)
+      } catch (e) {
+        status.textContent = wavelogErrorText(e)
+        return
+      }
+      status.textContent = t('settings.wlConnecting')
+      try {
+        const { owner, stations } = await connect(base, tok)
+        await this.platform.setSetting(K.url, url.input.value.trim())
+        await this.platform.setSetting(K.token, tok)
+        token.input.value = ''
+        token.input.placeholder = `wl2_…${tok.slice(-4)} ${t('settings.wlTokenSaved')}`
+        pick.replaceChildren(
+          ...stations.map((s) => {
+            const b = button(stationLabel(s), () => void choose(s), 'btn')
+            b.dataset.id = String(s.id)
+            b.setAttribute('aria-pressed', String(savedStation?.id === s.id))
+            return b
+          }),
+        )
+        pick.hidden = stations.length === 0
+        status.textContent =
+          stations.length === 0 ? t('settings.wlNoStations') : t('settings.wlConnected', { owner, n: stations.length })
+      } catch (e) {
+        status.textContent = wavelogErrorText(e)
+      }
+    }
+
+    const actions = el('div', 'segmented')
+    actions.append(button(t('settings.wlConnect'), () => void doConnect(), 'btn'))
+    if (savedToken) {
+      actions.append(
+        button(t('settings.wlForget'), () => {
+          void (async () => {
+            await this.platform.setSetting(K.token, '')
+            await this.platform.setSetting(K.station, '')
+            token.input.placeholder = 'wl2_…'
+            pick.hidden = true
+            status.textContent = t('settings.wlForgotten')
+          })()
+        }, 'btn'),
+      )
+    }
+    pick.classList.add('segmented--wrap')
+    wrap.append(el('span', 'field-label', t('settings.wl')), url.row, token.row, hint, actions, pick, status)
+    return wrap
+  }
+
   private helpSetting(): HTMLElement {
     const wrap = el('div', 'setting')
     wrap.append(button(`${t('settings.help')} ›`, () => this.nav.openHelp(), 'btn'))
@@ -192,3 +280,15 @@ function buildStamp(iso: string): string {
   const p = (n: number): string => String(n).padStart(2, '0')
   return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`
 }
+
+function parseStation(json: string | null): WavelogStation | null {
+  if (!json) return null
+  try {
+    const s = JSON.parse(json) as WavelogStation
+    return typeof s.id === 'number' ? s : null
+  } catch {
+    return null
+  }
+}
+
+const stationLabel = (s: WavelogStation): string => (s.callsign && s.callsign !== s.name ? `${s.name} (${s.callsign})` : s.name)
