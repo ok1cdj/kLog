@@ -1,4 +1,4 @@
-package com.ok1cdj.klog
+package com.ok1cdj.kqso
 
 import android.content.Context
 import android.webkit.JavascriptInterface
@@ -6,16 +6,16 @@ import org.json.JSONArray
 import java.io.File
 
 /**
- * window.KLogNative — the storage/host bridge (ch. 12). Pure file I/O keyed by log
+ * window.KQSONative — the storage/host bridge (ch. 12). Pure file I/O keyed by log
  * id, mirroring the OPFS worker protocol; the web NativePlatform wraps these
- * synchronous methods into the async KLogPlatform. Logs are real .adi files in
+ * synchronous methods into the async KQSOPlatform. Logs are real .adi files in
  * app storage (reachable via ADB), so there is no WebKit-style eviction.
  */
-class KLogBridge(private val activity: MainActivity) {
+class KQSOBridge(private val activity: MainActivity) {
 
     private val ctx: Context = activity.applicationContext
     private val logsDir: File = File(ctx.filesDir, "logs").apply { mkdirs() }
-    private val prefs = ctx.getSharedPreferences("klog", Context.MODE_PRIVATE)
+    private val prefs = ctx.getSharedPreferences("kqso", Context.MODE_PRIVATE)
 
     private fun adi(id: String) = File(logsDir, "$id.adi")
     private fun journal(id: String) = File(logsDir, "$id.journal")

@@ -2,7 +2,7 @@
 // mode names — everything else reads CSS tokens. Kept out of components so the
 // "no isEink in components" rule holds.
 
-import type { KLogPlatform } from '../platform/index'
+import type { KQSOPlatform } from '../platform/index'
 
 export type DisplayMode = 'eink' | 'standard'
 
@@ -27,14 +27,14 @@ export function currentDisplayMode(): DisplayMode {
  * (The @media (update: slow) hint is intentionally not trusted — WebView on the
  * Kompakt reports "fast" — so it is omitted.)
  */
-export async function initDisplayMode(platform: KLogPlatform): Promise<void> {
+export async function initDisplayMode(platform: KQSOPlatform): Promise<void> {
   const saved = await platform.getSetting(SETTING_KEY)
   const mode: DisplayMode = isMode(saved) ? saved : isMode(platform.displayMode) ? platform.displayMode : 'standard'
   applyDisplayMode(mode)
 }
 
 /** Switch mode and persist the choice. Takes effect immediately. */
-export async function setDisplayMode(platform: KLogPlatform, mode: DisplayMode): Promise<void> {
+export async function setDisplayMode(platform: KQSOPlatform, mode: DisplayMode): Promise<void> {
   applyDisplayMode(mode)
   await platform.setSetting(SETTING_KEY, mode)
 }

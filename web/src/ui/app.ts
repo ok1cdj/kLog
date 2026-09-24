@@ -2,7 +2,7 @@
 // is just an object that mounts into the root and cleans up after itself.
 
 import { getPlatform } from '../platform/index'
-import type { KLogPlatform } from '../platform/index'
+import type { KQSOPlatform } from '../platform/index'
 import { LogListScreen } from './screens/loglist'
 import { NewLogScreen } from './screens/newlog'
 import { LoggingScreen } from './screens/logging'
@@ -17,7 +17,7 @@ export interface Screen {
 }
 
 export class App {
-  private readonly platform: KLogPlatform = getPlatform()
+  private readonly platform: KQSOPlatform = getPlatform()
   private root!: HTMLElement
   private current: Screen | null = null
 

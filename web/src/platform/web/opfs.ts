@@ -1,11 +1,11 @@
-// Web KLogPlatform: OPFS-backed, all file I/O delegated to the worker (the only
+// Web KQSOPlatform: OPFS-backed, all file I/O delegated to the worker (the only
 // place SyncAccessHandle works). Parsing (readLogFile) stays here on the main
 // thread so the worker is pure I/O. Export/share/keepAwake are minimal here and
 // get hardened in F1.6 (persist(), iOS add-to-home, etc.).
 
 import type { LogMeta } from '../../core/model'
 import { readLogFile, writeLogHeader } from '../../core/index'
-import type { KLogPlatform, LogSummary } from '../types'
+import type { KQSOPlatform, LogSummary } from '../types'
 import type { RequestBody, WorkerRequest, WorkerResponse } from './protocol'
 
 /** True when OPFS + Workers are available (i.e. the web shim can persist). */
@@ -22,7 +22,7 @@ interface Pending {
   reject: (err: Error) => void
 }
 
-export class WebPlatform implements KLogPlatform {
+export class WebPlatform implements KQSOPlatform {
   private readonly worker: Worker
   private seq = 0
   private readonly pending = new Map<number, Pending>()

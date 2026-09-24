@@ -1,7 +1,7 @@
 // Log list (ch. 15 #1): name + QSO count, tap to open, per-row export/delete, and a
 // "Nový log" button. The app's home screen.
 
-import type { KLogPlatform, LogSummary } from '../../platform/index'
+import type { KQSOPlatform, LogSummary } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
 import { t } from '../i18n'
@@ -16,7 +16,7 @@ export class LogListScreen implements Screen {
   private readonly root = el('div', 'screen screen--list')
 
   constructor(
-    private readonly platform: KLogPlatform,
+    private readonly platform: KQSOPlatform,
     private readonly nav: LogListNav,
   ) {}
 
@@ -31,7 +31,7 @@ export class LogListScreen implements Screen {
     const logs = await this.platform.listLogs()
     const top = el('div', 'bar')
     top.append(
-      el('h1', 'title', 'kLog'),
+      el('h1', 'title', 'kQSO'),
       button(t('loglist.new'), () => this.nav.newLog(), 'btn btn--primary'),
       button('⚙', () => this.nav.openSettings(), 'btn btn--icon'),
     )

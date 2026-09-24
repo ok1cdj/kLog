@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "kLog"
+rootProject.name = "kQSO"
 include(":app")

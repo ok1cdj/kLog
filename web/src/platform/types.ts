@@ -1,5 +1,5 @@
 // The single boundary between the app and its host (ch. 12). Two implementations,
-// one API: the OPFS web shim (phase 1) and the Android KLogNative bridge (phase 2).
+// one API: the OPFS web shim (phase 1) and the Android KQSONative bridge (phase 2).
 // NOTHING outside src/platform/ may touch storage — that is what keeps phase 2 cheap.
 //
 // DOM-free on purpose: this type is imported by both DOM and WebWorker programs and
@@ -15,7 +15,7 @@ export interface LogSummary {
   readonly qsoCount: number
 }
 
-export interface KLogPlatform {
+export interface KQSOPlatform {
   /** Host-forced display mode; the web shim leaves it undefined (ch. 3). */
   readonly displayMode?: 'eink' | 'standard'
 

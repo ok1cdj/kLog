@@ -1,4 +1,4 @@
-// Domain model for kLog core. Pure data, zero DOM. See ZADANI-kLog.md ch. 7, 9, 11, 19.1.
+// Domain model for kQSO core. Pure data, zero DOM. See ZADANI-kQSO.md ch. 7, 9, 11, 19.1.
 
 /**
  * A single RF signal specification (ch. 19.1 forward-compat).

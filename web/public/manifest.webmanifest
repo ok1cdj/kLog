@@ -1,6 +1,6 @@
 {
-  "name": "kLog",
-  "short_name": "kLog",
+  "name": "kQSO",
+  "short_name": "kQSO",
   "description": "Ham radio deník s jednořádkovým chytrým vstupem",
   "lang": "cs",
   "start_url": ".",
@@ -10,9 +10,8 @@
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "kqso-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "kqso-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "kqso-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

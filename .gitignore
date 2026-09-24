@@ -7,5 +7,5 @@ dist/
 .gradle/
 build/
 local.properties
-app/src/main/assets/kLog/
+app/src/main/assets/kQSO/
 .kotlin/

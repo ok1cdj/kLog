@@ -15,7 +15,7 @@ import {
   satelliteSignal,
 } from '../../core/index'
 import type { AwardReference, LogMeta, ProfileId } from '../../core/index'
-import type { KLogPlatform } from '../../platform/index'
+import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button, fieldRow, selectRow } from '../dom'
 import { t } from '../i18n'
@@ -90,7 +90,7 @@ export class NewLogScreen implements Screen {
   private readonly root = el('form', 'screen screen--form')
 
   constructor(
-    private readonly platform: KLogPlatform,
+    private readonly platform: KQSOPlatform,
     private readonly nav: NewLogNav,
   ) {}
 

@@ -23,7 +23,7 @@ function qso(call: string): Qso {
   }
 }
 
-describe('MemoryPlatform (KLogPlatform contract)', () => {
+describe('MemoryPlatform (KQSOPlatform contract)', () => {
   it('create → append → read → list', async () => {
     const p = new MemoryPlatform()
     const id = await p.createLog(meta)

@@ -1,4 +1,4 @@
-# ZADANI-kLog.md
+# ZADANI-kQSO.md
 
 Ham radio deník s jednořádkovým chytrým vstupem. **Webová aplikace** na `apps.ok1cdj.com`, ve druhé fázi zabalená do WebView shellu jako APK.
 
@@ -39,14 +39,14 @@ APK pro Kompakt. Nepřidává funkce, přidává integraci:
 
 ### Shell možná nezůstane tady
 
-Shell je ~150 řádků. Pokud se ukáže, že je generický — načti assety, drž displej, ulož soubor, sdílej — vytáhni ho do samostatného **`kShell`** a zabal do něj i ostatní nástroje z `apps.ok1cdj.com`. Rozhodnutí se dá odložit, protože `KLogPlatform` je čistá hranice; extrakce je pak přejmenování rozhraní, ne refaktor.
+Shell je ~150 řádků. Pokud se ukáže, že je generický — načti assety, drž displej, ulož soubor, sdílej — vytáhni ho do samostatného **`kShell`** a zabal do něj i ostatní nástroje z `apps.ok1cdj.com`. Rozhodnutí se dá odložit, protože `KQSOPlatform` je čistá hranice; extrakce je pak přejmenování rozhraní, ne refaktor.
 
 ---
 
 ## 2. Struktura
 
 ```
-kLog/
+kQSO/
 ├── web/                        TypeScript, žádné runtime závislosti
 │   ├── src/core/               parser, model, ADIF writer/reader — bez DOM API
 │   ├── src/ui/                 komponenty, klávesnice
@@ -62,8 +62,8 @@ kLog/
 
 | | |
 |---|---|
-| Repo | `ok1cdj/kLog` |
-| Application ID | `com.ok1cdj.klog` |
+| Repo | `ok1cdj/kQSO` |
+| Application ID | `com.ok1cdj.kqso` |
 | Licence | GPL-3.0 |
 | Web | TypeScript, Vite, Vitest — **jen devDependencies**, výstup je statický bundle bez runtime závislostí |
 | Android (fáze 2) | Kotlin 2.4.10, AGP 9.4.0, Gradle 9.7.1, minSdk 30, target/compileSdk 37 |
@@ -115,7 +115,7 @@ Všechny rozdíly musí být vyjádřené tokeny v `src/theme/`. Žádné dva st
 Pořadí priorit:
 
 1. uložená volba uživatele (nastavení, persistováno)
-2. `window.KLogNative?.displayMode` — APK shell nastaví `eink`
+2. `window.KQSONative?.displayMode` — APK shell nastaví `eink`
 3. `@media (update: slow)` — standardní cesta k detekci e-inku, ale **nespoléhat na ni**; WebView na Kompaktu o typu displeje nejspíš neví a ohlásí `fast`
 4. výchozí `standard`
 
@@ -387,7 +387,7 @@ Ruční přepis: `\d{4}` jako první token řádku (pro dodatečné zapisování
 Jediné rozhraní mezi aplikací a hostitelem. Dvě implementace, stejné API.
 
 ```ts
-interface KLogPlatform {
+interface KQSOPlatform {
   readonly displayMode?: 'eink' | 'standard'
   listLogs(): Promise<LogMeta[]>
   createLog(meta: LogMeta): Promise<string>
@@ -404,9 +404,9 @@ interface KLogPlatform {
 
 **Web (fáze 1):** shim nad **OPFS** (`navigator.storage.getDirectory()`, zápis přes `createSyncAccessHandle` ve workeru — dává skutečný append bez přepisu celého souboru). Export jako stažení souboru, sdílení přes Web Share API s fallbackem na stažení, `keepAwake` přes Wake Lock API.
 
-**APK (fáze 2):** `addJavascriptInterface` jako `window.KLogNative`. Logy jsou skutečné soubory v app storage.
+**APK (fáze 2):** `addJavascriptInterface` jako `window.KQSONative`. Logy jsou skutečné soubory v app storage.
 
-Detekce: `window.KLogNative` existuje → nativní, jinak shim. Zbytek aplikace o rozdílu neví.
+Detekce: `window.KQSONative` existuje → nativní, jinak shim. Zbytek aplikace o rozdílu neví.
 
 ---
 

@@ -18,15 +18,15 @@ val storeFilePath = prop("signing.storeFile")
 val hasSigning = storeFilePath.isNotEmpty() && rootProject.file(storeFilePath).exists()
 
 android {
-    namespace = "com.ok1cdj.klog"
+    namespace = "com.ok1cdj.kqso"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.ok1cdj.klog"
+        applicationId = "com.ok1cdj.kqso"
         minSdk = 30
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     buildFeatures {
@@ -60,10 +60,10 @@ android {
 }
 
 // Copy the built web app (web/dist) into the APK assets before packaging.
-// The web build uses base /kLog/, matching the WebViewAssetLoader mount point.
+// The web build uses base /kQSO/, matching the WebViewAssetLoader mount point.
 val copyWebAssets = tasks.register<Copy>("copyWebAssets") {
     from(rootProject.layout.projectDirectory.dir("web/dist"))
-    into(layout.projectDirectory.dir("src/main/assets/kLog"))
+    into(layout.projectDirectory.dir("src/main/assets/kQSO"))
 }
 tasks.named("preBuild") { dependsOn(copyWebAssets) }
 

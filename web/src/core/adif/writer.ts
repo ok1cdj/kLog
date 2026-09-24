@@ -62,7 +62,7 @@ export function writeQso(qso: Qso): string {
 
 /** A minimal ADIF header so external uploaders accept the file (ch. 14). */
 export function writeHeader(): string {
-  return `${writeField(F.ADIF_VER, '3.1.4')} ${writeField(F.PROGRAMID, 'kLog')} <EOH>`
+  return `${writeField(F.ADIF_VER, '3.1.4')} ${writeField(F.PROGRAMID, 'kQSO')} <EOH>`
 }
 
 /** Full ADIF document: header line + one record per line. */

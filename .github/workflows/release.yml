@@ -79,7 +79,7 @@ jobs:
         id: apk
         run: |
           VER=$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | grep -oE '"[^"]+"' | tr -d '"')
-          NAME="klog-${VER}.apk"
+          NAME="kqso-${VER}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$NAME"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
 

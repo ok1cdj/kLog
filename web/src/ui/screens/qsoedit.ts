@@ -3,7 +3,7 @@
 
 import { BANDS, MODES, matchBand, matchMode, parseReferenceInput, readLogFile, writeLogFile } from '../../core/index'
 import type { Qso, Signal } from '../../core/index'
-import type { KLogPlatform } from '../../platform/index'
+import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button, fieldRow, selectRow } from '../dom'
 import { t } from '../i18n'
@@ -30,7 +30,7 @@ export class QsoEditScreen implements Screen {
   private readonly root = el('form', 'screen screen--form')
 
   constructor(
-    private readonly platform: KLogPlatform,
+    private readonly platform: KQSOPlatform,
     private readonly logId: string,
     private readonly index: number,
     private readonly nav: QsoEditNav,

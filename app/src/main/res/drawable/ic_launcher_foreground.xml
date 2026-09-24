@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- kQSO: Q with an underscore cursor. Converted from kqso-icon-foreground.svg
+     (translate(54 54) scale(0.145) translate(-268 -243), precomputed). Black on
+     the white adaptive background — the Kompakt is e-ink; monochrome uses alpha only. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Q ring: centre (45.88, 52.985), r 14.21 -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="6.38"
+        android:pathData="M31.67,52.985a14.21,14.21 0,1 0,28.42 0a14.21,14.21 0,1 0,-28.42 0z" />
+    <!-- Q tail -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="6.38"
+        android:pathData="M51.1,58.205L63.02,70.095" />
+    <!-- underscore cursor -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M67.34,65.745h12.18v5.51h-12.18z" />
+</vector>

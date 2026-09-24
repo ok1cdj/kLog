@@ -1,6 +1,23 @@
-# kLog — Satellite QSO (F3)
+# kQSO — plan
 
-## Status — implemented & deployed (2026-09-23)
+## Rebranding kLog → kQSO (v1.1, 2026-09-24)
+
+Renamed because `KLog` by EA4K is an established ham logger with the same name.
+Cosmetic only, no functional change, **no data migration**:
+
+- name kQSO, repo `ok1cdj/kQSO`, web `ok1cdj.github.io/kQSO/` (base `/kQSO/`)
+- application ID / Kotlin package `com.ok1cdj.kqso`, bridge `window.KQSONative`,
+  platform interface `KQSOPlatform`, SharedPreferences `kqso`, SW cache `kqso-*`
+- ADIF `PROGRAMID` kQSO, header meta fields `APP_KQSO_*` (old `APP_KLOG_*` logs are
+  not read — only test data existed)
+- new icon (Q with an underscore cursor): web SVG/PNG + maskable + apple-touch;
+  Android adaptive icon, black glyph on white (e-ink), monochrome for themed icons
+- keystore file/alias (`klog`) intentionally unchanged
+- version 1.1 (web + APK)
+
+## Satellite QSO (F3)
+
+### Status — implemented & deployed (2026-09-23)
 
 Core + ADIF + parser done and unit-tested (106 tests). Deployed to Pages and to a
 signed-less **debug APK** on the Kompakt. **Awaiting the operator's real-pass field
@@ -15,7 +32,7 @@ New Log dialog now uses an **on-brand tile grid** (`tilePicker`) for BOTH the
 **profile** and the **satellite** (each sat tile shows `up↑down↓`, "FM" for
 repeaters); tapping selects, no full-screen OS picker. The logging header shows the
 bird **read-only** (`RS-44 2m↑70cm↓ SSB`). `LogMeta.satLabel` (ADIF header
-`APP_KLOG_SATLABEL`) persists the chosen bird; remembered via `setSetting('satLabel')`.
+`APP_KQSO_SATLABEL`) persists the chosen bird; remembered via `setSetting('satLabel')`.
 
 **Still open:**
 - `SAT_MODE` for AO-7 A/B (`A`/`B`) and QO-100 (`S/X`) are provisional — verify/tweak.
@@ -24,7 +41,7 @@ bird **read-only** (`RS-44 2m↑70cm↓ SSB`). `LogMeta.satLabel` (ADIF header
   (`cacheMode = LOAD_NO_CACHE`, so an APK update never serves a stale index → blank).
   Decide whether to commit the debug helpers; the cache fix should land with them.
 
-## Context
+### Context
 
 The operator works amateur satellites daily and will test this immediately, so
 it's the first F3 feature. The data model is already satellite-ready: `Signal`
@@ -37,7 +54,7 @@ downlink band, mode and `SAT_NAME` are set automatically; the exchange is
 **Decisions (confirmed):** satellite chosen via a **dropdown** in the logging
 header; ADIF **`BAND` = uplink (TX)**, `BAND_RX` = downlink (RX).
 
-## Satellite DB (`web/src/core/satellites.ts`, new)
+### Satellite DB (`web/src/core/satellites.ts`, new)
 
 Pure data + a helper. `BAND` = uplink, `BAND_RX` = downlink.
 
@@ -74,9 +91,9 @@ AO-123 = ASRTU-1, FM repeater (up 145.850 / 67 Hz CTCSS, down 435.400 — CTCSS 
 operational, not logged). The dropdown lists `label`; `SAT_NAME` written to ADIF is
 `name` (so "AO-7 A" and "AO-7 B" both log as `AO-7`, distinguished by `SAT_MODE`).
 
-## Changes
+### Changes
 
-### Core
+#### Core
 - **`dictionaries.ts`** — add bands `13cm`, `3cm` to `BANDS` (QO-100).
 - **`model.ts`**
   - `ProfileId` += `'sat'`; `PROFILES.sat` with a new flag **`fixedBand: true`**
@@ -97,7 +114,7 @@ operational, not logged). The dropdown lists `label`; `SAT_NAME` written to ADIF
   ignored on read; presence of SAT_NAME is the marker). Keeps roundtrip.
 - **`index.ts`** — export `SATELLITES`, `satelliteSignal`.
 
-### UI (as built — supersedes the header-dropdown idea)
+#### UI (as built — supersedes the header-dropdown idea)
 - **`screens/newlog.ts`** — `tilePicker(label, tiles, selected, onChange)` helper
   used for **profile** (4 tiles) and **satellite** (`SAT_TILES`, shows `up↑down↓`
   + "FM"). `syncFields` hides band/mode + reference for a sat log and shows the
@@ -107,14 +124,14 @@ operational, not logged). The dropdown lists `label`; `SAT_NAME` written to ADIF
   bird **read-only** (`el('b','hdr-sat', …)`), no select. Sticky seeded from
   `meta.satLabel` via `applySatellite`. Exchange = report+locator
   (`serialAfterCall=false`). DUPE keyed on `call` + `satName`.
-- **`logfile.ts`** — `LogMeta.satLabel` ↔ ADIF header `APP_KLOG_SATLABEL`.
+- **`logfile.ts`** — `LogMeta.satLabel` ↔ ADIF header `APP_KQSO_SATLABEL`.
 - **`styles.css`** — `.tilegrid`/`.tile`/`.tile--sel`; `.screen--log`
   `grid-template-columns: minmax(0,1fr)` + `.field[hidden]{display:none}` (the
   layout fix that stopped the narrow-screen overflow / clipped nav+keyboard).
 - **`screens/qsolist.ts` / `qsoedit.ts`** — show/preserve `satName`.
 - **`i18n.ts`** — `newlog.profileSat`, `newlog.satellite`, `newlog.profileAktivaceSub`.
 
-### Reuse (don't reinvent)
+#### Reuse (don't reinvent)
 - Report+locator exchange = existing parser under a non-serial profile
   (`classify.ts` #7 number→received report, #8 locator). No parser rule changes
   beyond the `fixedBand` band-token skip.
@@ -122,7 +139,7 @@ operational, not logged). The dropdown lists `label`; `SAT_NAME` written to ADIF
 - `selectRow` (`ui/dom.ts`) for the satellite dropdown; `setSetting`/`getSetting`
   (platform) for remembering the last satellite.
 
-## Verification
+### Verification
 - `cd web && npm test` — new tests: satellites DB (`satelliteSignal` maps up/down),
   ADIF roundtrip of a sat Qso (`PROP_MODE`/`SAT_NAME`/`SAT_MODE`/`BAND_RX`), parse
   of `9A5Y 59 JN86` under the `sat` profile → call+report+grid.
@@ -131,7 +148,7 @@ operational, not logged). The dropdown lists `label`; `SAT_NAME` written to ADIF
   shows `2m↑ 70cm↓ SSB`; log `9A5Y 59 JN86`; check via ADB the `.adi` record has
   `<PROP_MODE:3>SAT <SAT_NAME:5>RS-44 <BAND:2>2m <BAND_RX:4>70cm <GRIDSQUARE…`.
 
-## Notes
+### Notes
 - DB is complete (10 rows incl. AO-7 A/B and AO-123/ASRTU-1). The `SAT_MODE`
   strings for AO-7 A/B (`A`/`B`) and QO-100 (`S/X`) are provisional labels — trivial
   to tweak later; they don't affect band/mode/logging.

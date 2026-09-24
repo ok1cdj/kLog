@@ -1,5 +1,5 @@
-// A kLog log file is one ADIF document whose HEADER carries the log metadata via
-// application-defined APP_KLOG_* fields (ch. 13: the .adi is the single source of
+// A kQSO log file is one ADIF document whose HEADER carries the log metadata via
+// application-defined APP_KQSO_* fields (ch. 13: the .adi is the single source of
 // truth). QSO records follow. Uploaders ignore APP_ header fields, so the same
 // file is also the export.
 
@@ -8,16 +8,16 @@ import { writeField, writeQso } from './writer'
 import { readAdif } from './reader'
 
 const A = {
-  NAME: 'APP_KLOG_NAME',
-  PROFILE: 'APP_KLOG_PROFILE',
-  MYCALL: 'APP_KLOG_MYCALL',
-  MYGRID: 'APP_KLOG_MYGRID',
-  MYREF: 'APP_KLOG_MYREF',
-  DEFBAND: 'APP_KLOG_DEFBAND',
-  DEFMODE: 'APP_KLOG_DEFMODE',
-  DEFBANDRX: 'APP_KLOG_DEFBANDRX',
-  DEFMODERX: 'APP_KLOG_DEFMODERX',
-  SATLABEL: 'APP_KLOG_SATLABEL',
+  NAME: 'APP_KQSO_NAME',
+  PROFILE: 'APP_KQSO_PROFILE',
+  MYCALL: 'APP_KQSO_MYCALL',
+  MYGRID: 'APP_KQSO_MYGRID',
+  MYREF: 'APP_KQSO_MYREF',
+  DEFBAND: 'APP_KQSO_DEFBAND',
+  DEFMODE: 'APP_KQSO_DEFMODE',
+  DEFBANDRX: 'APP_KQSO_DEFBANDRX',
+  DEFMODERX: 'APP_KQSO_DEFMODERX',
+  SATLABEL: 'APP_KQSO_SATLABEL',
 } as const
 
 const PROFILE_IDS: readonly ProfileId[] = ['vkv', 'aktivace', 'obecny', 'sat']
@@ -42,7 +42,7 @@ function metaFields(meta: LogMeta): string[] {
 
 /** Serialize a whole log (header with meta + one record per QSO) to ADIF text. */
 export function writeLogFile(meta: LogMeta, qsos: readonly Qso[]): string {
-  const header = [writeField('ADIF_VER', '3.1.4'), writeField('PROGRAMID', 'kLog'), ...metaFields(meta), '<EOH>'].join(' ')
+  const header = [writeField('ADIF_VER', '3.1.4'), writeField('PROGRAMID', 'kQSO'), ...metaFields(meta), '<EOH>'].join(' ')
   return [header, ...qsos.map(writeQso)].join('\n') + '\n'
 }
 

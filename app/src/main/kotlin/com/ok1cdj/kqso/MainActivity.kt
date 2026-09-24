@@ -1,4 +1,4 @@
-package com.ok1cdj.klog
+package com.ok1cdj.kqso
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -22,8 +22,8 @@ import androidx.webkit.WebViewAssetLoader
 import java.io.File
 
 /**
- * kLog Android shell (ch. 1, phase 2). A single WebView that runs the bundled web
- * app. Storage/export/share/keep-awake go through KLogBridge (window.KLogNative);
+ * kQSO Android shell (ch. 1, phase 2). A single WebView that runs the bundled web
+ * app. Storage/export/share/keep-awake go through KQSOBridge (window.KQSONative);
  * the web layer is otherwise identical to the browser build.
  */
 class MainActivity : ComponentActivity() {
@@ -49,8 +49,8 @@ class MainActivity : ComponentActivity() {
         // Debug builds: allow chrome://inspect and forward JS console to logcat.
         if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
 
-        // The web build (base /kLog/, shared with GitHub Pages) is bundled at
-        // assets/kLog/; serve the whole assets root so /kLog/... resolves.
+        // The web build (base /kQSO/, shared with GitHub Pages) is bundled at
+        // assets/kQSO/; serve the whole assets root so /kQSO/... resolves.
         val loader = WebViewAssetLoader.Builder()
             .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
             settings.cacheMode = WebSettings.LOAD_NO_CACHE
             settings.allowFileAccess = false
             settings.allowContentAccess = false
-            addJavascriptInterface(KLogBridge(this@MainActivity), "KLogNative")
+            addJavascriptInterface(KQSOBridge(this@MainActivity), "KQSONative")
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(
                     view: WebView,
@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
             // confirm — which would break delete confirmations and the export prompt.
             webChromeClient = object : WebChromeClient() {
                 override fun onConsoleMessage(m: ConsoleMessage): Boolean {
-                    Log.i("kLogWeb", "${m.messageLevel()} ${m.message()} @${m.sourceId()}:${m.lineNumber()}")
+                    Log.i("kQSOWeb", "${m.messageLevel()} ${m.message()} @${m.sourceId()}:${m.lineNumber()}")
                     return true
                 }
 
@@ -100,7 +100,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         setContentView(webView)
-        webView.loadUrl("https://appassets.androidplatform.net/kLog/index.html")
+        webView.loadUrl("https://appassets.androidplatform.net/kQSO/index.html")
     }
 
     fun setKeepScreenOn(on: Boolean) = runOnUiThread {

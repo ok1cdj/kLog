@@ -1,17 +1,17 @@
-// In-memory KLogPlatform: reference implementation and test double. Pure (a Map of
+// In-memory KQSOPlatform: reference implementation and test double. Pure (a Map of
 // strings), so it runs under the core tsconfig and in Vitest's node environment.
 // Also used as a fallback when OPFS is unavailable.
 
 import type { LogMeta } from '../core/model'
 import { readLogFile, writeLogHeader } from '../core/index'
-import type { KLogPlatform, LogSummary } from './types'
+import type { KQSOPlatform, LogSummary } from './types'
 
 interface Entry {
   content: string
   journal: string
 }
 
-export class MemoryPlatform implements KLogPlatform {
+export class MemoryPlatform implements KQSOPlatform {
   // displayMode omitted → undefined (web/memory does not force a mode, ch. 3)
   private readonly logs = new Map<string, Entry>()
   private readonly settings = new Map<string, string>()

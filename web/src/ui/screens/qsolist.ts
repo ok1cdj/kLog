@@ -2,7 +2,7 @@
 
 import { readLogFile } from '../../core/index'
 import type { Qso } from '../../core/index'
-import type { KLogPlatform } from '../../platform/index'
+import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
 import { t } from '../i18n'
@@ -20,7 +20,7 @@ export class QsoListScreen implements Screen {
   private readonly root = el('div', 'screen screen--list')
 
   constructor(
-    private readonly platform: KLogPlatform,
+    private readonly platform: KQSOPlatform,
     private readonly logId: string,
     private readonly nav: QsoListNav,
   ) {}

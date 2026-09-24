@@ -20,7 +20,7 @@ describe('writeField / writeHeader', () => {
   })
 
   it('emits a minimal ADIF header', () => {
-    expect(writeHeader()).toBe('<ADIF_VER:5>3.1.4 <PROGRAMID:4>kLog <EOH>')
+    expect(writeHeader()).toBe('<ADIF_VER:5>3.1.4 <PROGRAMID:4>kQSO <EOH>')
   })
 })
 

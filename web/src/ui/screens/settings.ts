@@ -3,7 +3,7 @@
 // navigator.language with no in-app switch (ch. 2).
 
 import { platformKind } from '../../platform/index'
-import type { KLogPlatform } from '../../platform/index'
+import type { KQSOPlatform } from '../../platform/index'
 import { currentDisplayMode, setDisplayMode } from '../../theme/mode'
 import type { DisplayMode } from '../../theme/mode'
 import type { Screen } from '../app'
@@ -25,7 +25,7 @@ export class SettingsScreen implements Screen {
   private readonly root = el('div', 'screen screen--list')
 
   constructor(
-    private readonly platform: KLogPlatform,
+    private readonly platform: KQSOPlatform,
     private readonly nav: SettingsNav,
   ) {}
 
@@ -102,7 +102,7 @@ export class SettingsScreen implements Screen {
     wrap.append(
       el('div', undefined, t('settings.aboutLicense')),
       el('div', undefined, t('settings.aboutAuthor')),
-      el('div', undefined, 'github.com/ok1cdj/kLog'),
+      el('div', undefined, 'github.com/ok1cdj/kQSO'),
     )
     return wrap
   }

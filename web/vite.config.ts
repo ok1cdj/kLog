@@ -1,11 +1,11 @@
 import { defineConfig } from 'vitest/config'
 import pkg from './package.json'
 
-// GitHub Pages project site serves under /kLog/ — build with that base. Dev stays
+// GitHub Pages project site serves under /kQSO/ — build with that base. Dev stays
 // at / for convenience. The SW cache key is the app version (ch. 13 / F1.6): a new
 // deploy = a new cache name = old caches purged, so clients never hang on a stale build.
 export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/kLog/' : '/',
+  base: command === 'build' ? '/kQSO/' : '/',
   define: {
     // Unique per build so every deploy = a new SW cache name = old cache purged.
     // (Relying on a manual package.json bump is too easy to forget.)

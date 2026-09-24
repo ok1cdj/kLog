@@ -1,15 +1,15 @@
 // The one place the app asks for storage. Detection order (ch. 12): native bridge
-// → OPFS web shim → in-memory fallback. Everything else imports KLogPlatform from
+// → OPFS web shim → in-memory fallback. Everything else imports KQSOPlatform from
 // here and never knows the difference.
 
 import { MemoryPlatform } from './memory'
 import { nativePlatform } from './native'
 import { WebPlatform, opfsAvailable } from './web/opfs'
-import type { KLogPlatform } from './types'
+import type { KQSOPlatform } from './types'
 
-let instance: KLogPlatform | null = null
+let instance: KQSOPlatform | null = null
 
-export function getPlatform(): KLogPlatform {
+export function getPlatform(): KQSOPlatform {
   if (instance) return instance
   const native = nativePlatform()
   if (native) {
@@ -17,7 +17,7 @@ export function getPlatform(): KLogPlatform {
   } else if (opfsAvailable()) {
     instance = new WebPlatform()
   } else {
-    console.warn('kLog: OPFS unavailable — using in-memory storage; data will NOT persist.')
+    console.warn('kQSO: OPFS unavailable — using in-memory storage; data will NOT persist.')
     instance = new MemoryPlatform()
   }
   return instance
@@ -29,6 +29,6 @@ export function platformKind(): 'native' | 'opfs' | 'memory' {
   return opfsAvailable() ? 'opfs' : 'memory'
 }
 
-export type { KLogPlatform, LogSummary } from './types'
+export type { KQSOPlatform, LogSummary } from './types'
 export { MemoryPlatform } from './memory'
 export { WebPlatform, opfsAvailable } from './web/opfs'

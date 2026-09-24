@@ -19,7 +19,7 @@ import {
   PROFILES,
 } from '../../core/index'
 import type { CallDatabase, CoreState, LogMeta, PartialQso, Qso } from '../../core/index'
-import type { KLogPlatform } from '../../platform/index'
+import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
 import { t } from '../i18n'
@@ -52,7 +52,7 @@ export class LoggingScreen implements Screen {
   private readonly onKeydown = (e: KeyboardEvent): void => this.onHardwareKey(e)
 
   constructor(
-    private readonly platform: KLogPlatform,
+    private readonly platform: KQSOPlatform,
     private readonly logId: string,
     private readonly nav: LoggingNav,
   ) {}
@@ -349,7 +349,7 @@ export class LoggingScreen implements Screen {
 
 // The single hardcoded fallback meta used only until init() loads the real log.
 const DEFAULT_META: LogMeta = {
-  name: 'kLog',
+  name: 'kQSO',
   profile: 'aktivace',
   myCall: 'OK1CDJ',
   myGrid: 'JN79US',

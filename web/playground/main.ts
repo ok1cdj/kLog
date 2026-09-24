@@ -21,7 +21,7 @@ import type {
   TokenClass,
 } from '../src/core/index'
 import { getPlatform, platformKind } from '../src/platform/index'
-import type { KLogPlatform } from '../src/platform/index'
+import type { KQSOPlatform } from '../src/platform/index'
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T
 
@@ -38,7 +38,7 @@ const logsEl = $<HTMLSelectElement>('logs')
 const journalEl = $('journal')
 const journalTextEl = $('journal-text')
 
-const platform: KLogPlatform = getPlatform()
+const platform: KQSOPlatform = getPlatform()
 let meta: LogMeta = makeMeta('aktivace')
 let state: CoreState = initialState(meta)
 let currentLogId = ''

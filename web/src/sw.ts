@@ -10,7 +10,7 @@ export {} // make this a module so the `self` declaration is scoped, not global
 declare const self: ServiceWorkerGlobalScope
 declare const __SW_VERSION__: string
 
-const CACHE = `klog-${__SW_VERSION__}`
+const CACHE = `kqso-${__SW_VERSION__}`
 
 self.addEventListener('install', () => {
   // Activate the new worker immediately — don't wait for old tabs to close.
@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         return res
       } catch (err) {
         // Offline and not cached: for a navigation, serve the cached app shell.
-        // Resolve paths against the SW scope so it works under /kLog/ on Pages.
+        // Resolve paths against the SW scope so it works under /kQSO/ on Pages.
         if (req.mode === 'navigate') {
           const scope = self.registration.scope
           const shell =

@@ -1,4 +1,4 @@
-# kLog
+# kQSO
 
 A ham radio logger with a single, smart input line. One line recognizes what you
 type — callsign, band/mode, report, serial, locator, award reference — so you can
@@ -8,15 +8,17 @@ as an APK for the second phase.
 Target devices (all first-class): **Mudita Kompakt** (480×800 e-ink), iPad/tablet,
 desktop.
 
-- **Live web:** <https://ok1cdj.github.io/kLog/>
-- Spec: [`ZADANI-kLog.md`](ZADANI-kLog.md) · plan: [`PLAN-kLog.md`](PLAN-kLog.md) (both in Czech)
+*Formerly kLog — renamed to avoid a clash with KLog by EA4K.*
+
+- **Live web:** <https://ok1cdj.github.io/kQSO/>
+- Spec: [`ZADANI-kQSO.md`](ZADANI-kQSO.md) · plan: [`PLAN-kQSO.md`](PLAN-kQSO.md) (spec in Czech)
 
 ## Status
 
 - **Phase 1 — web:** complete and deployed. Single-line parser + ADIF, OPFS storage
   with a crash journal, 6×7 on-screen keyboard (no `<input>`, so no system keyboard),
   log management, e-ink / standard display modes, offline PWA, EN/CS UI.
-- **Phase 2 — Android shell (`app/`):** complete. WebView + native `KLogNative`
+- **Phase 2 — Android shell (`app/`):** complete. WebView + native `KQSONative`
   bridge (logs as real `.adi` files in app storage, SAF export, `ACTION_SEND` share,
   keep-screen-on, e-ink hardcoded); signed release APK built by CI on a `v*` tag.
 - **Phase 3 — later:** full VHF-contest engine (QRB, scoring, EDI/REG1TEST export),
@@ -50,7 +52,7 @@ npm ci
 npm test          # parser core + ADIF (Vitest)
 npm run typecheck # 4 projects: core / browser / worker / sw
 npm run dev       # dev server at /
-npm run build     # production build to web/dist (base /kLog/)
+npm run build     # production build to web/dist (base /kQSO/)
 ```
 
 Layout:
@@ -67,7 +69,7 @@ app/                Android WebView shell (Kotlin, AGP 9, compileSdk 37)
 
 ### Android shell
 
-`app/` is the Android WebView shell (`com.ok1cdj.klog`): native storage (logs as
+`app/` is the Android WebView shell (`com.ok1cdj.kqso`): native storage (logs as
 `.adi` files), SAF export, e-ink mode hardcoded. Local build (needs JDK 17+ and an
 Android SDK via `sdk.dir` in `local.properties`):
 
@@ -80,8 +82,8 @@ cd .. && ./gradlew :app:assembleDebug
 
 - **Web:** push to `main` → GitHub Actions (`deploy.yml`, `npm ci && npm test &&
   npm run build`) → `web/dist` deployed to GitHub Pages.
-- **APK:** push a `v*` tag (`git tag v1.0 && git push origin v1.0`) → `release.yml`
-  builds the web, signs the release APK, and attaches it to a GitHub Release.
+- **APK:** push a `v*` tag (`git tag v1.1 && git push origin v1.1`) → `release.yml`
+  builds the web, signs the release APK, and attaches it to a GitHub Release as `kqso-<tag>.apk`.
 
 Signing the APK needs **repository secrets** (Settings → Secrets and variables →
 Actions), like the rest of the app family:

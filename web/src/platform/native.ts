@@ -1,11 +1,11 @@
-// Android WebView bridge (ch. 12, phase 2). The shell injects `window.KLogNative`
+// Android WebView bridge (ch. 12, phase 2). The shell injects `window.KQSONative`
 // via addJavascriptInterface — a SYNCHRONOUS object (methods return strings, not
-// Promises). NativePlatform wraps it into the async KLogPlatform the app expects.
-// In phase 1 (browser) KLogNative is absent and this stays dormant.
+// Promises). NativePlatform wraps it into the async KQSOPlatform the app expects.
+// In phase 1 (browser) KQSONative is absent and this stays dormant.
 
 import type { LogMeta } from '../core/model'
 import { readLogFile, writeLogHeader } from '../core/index'
-import type { KLogPlatform, LogSummary } from './types'
+import type { KQSOPlatform, LogSummary } from './types'
 
 /** The raw @JavascriptInterface surface. Pure file I/O keyed by log id (mirrors the OPFS worker). */
 interface NativeBridge {
@@ -30,11 +30,11 @@ interface NativeBridge {
 
 declare global {
   interface Window {
-    KLogNative?: NativeBridge
+    KQSONative?: NativeBridge
   }
 }
 
-class NativePlatform implements KLogPlatform {
+class NativePlatform implements KQSOPlatform {
   readonly displayMode: 'eink' | 'standard'
   readonly nativeVersion: string
 
@@ -121,6 +121,6 @@ class NativePlatform implements KLogPlatform {
   }
 }
 
-export function nativePlatform(): KLogPlatform | null {
-  return typeof window !== 'undefined' && window.KLogNative ? new NativePlatform(window.KLogNative) : null
+export function nativePlatform(): KQSOPlatform | null {
+  return typeof window !== 'undefined' && window.KQSONative ? new NativePlatform(window.KQSONative) : null
 }
