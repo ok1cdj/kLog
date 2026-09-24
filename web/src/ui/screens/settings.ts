@@ -171,7 +171,7 @@ export class SettingsScreen implements Screen {
     const wrap = el('div', 'setting about')
     wrap.append(
       el('div', undefined, t('settings.aboutName')),
-      el('div', undefined, t('settings.versionWeb', { v: __APP_VERSION__ })),
+      el('div', undefined, t('settings.versionWeb', { v: `${__APP_VERSION__} · ${buildStamp(__BUILD_TIME__)}` })),
     )
     // APK version only when running inside the native shell (ch. 2.2).
     if (this.platform.nativeVersion) {
@@ -184,4 +184,11 @@ export class SettingsScreen implements Screen {
     )
     return wrap
   }
+}
+
+/** Local build time as DD.MM.YYYY HH:MM. */
+function buildStamp(iso: string): string {
+  const d = new Date(iso)
+  const p = (n: number): string => String(n).padStart(2, '0')
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`
 }

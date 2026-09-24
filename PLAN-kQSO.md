@@ -55,10 +55,6 @@ bird **read-only** (`RS-44 SSB` — up/down bands dropped 2026-09-24, they clipp
 
 **Still open:**
 - `SAT_MODE` for AO-7 A/B (`A`/`B`) and QO-100 (`S/X`) are provisional — verify/tweak.
-- `MainActivity` has uncommitted **debug helpers** (JS console→logcat,
-  `setWebContentsDebuggingEnabled`) + the committed-pending **cache fix**
-  (`cacheMode = LOAD_NO_CACHE`, so an APK update never serves a stale index → blank).
-  Decide whether to commit the debug helpers; the cache fix should land with them.
 
 ### Context
 
