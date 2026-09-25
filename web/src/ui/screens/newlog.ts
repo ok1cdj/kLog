@@ -19,7 +19,8 @@ import {
 import type { AwardReference, LogMeta, ProfileId } from '../../core/index'
 import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
-import { el, button, fieldError, fieldRow, selectRow } from '../dom'
+import { el, button, fieldError, fieldRow, selectRow, tilePicker } from '../dom'
+import type { Tile } from '../dom'
 import { t } from '../i18n'
 
 export interface NewLogNav {
@@ -34,11 +35,6 @@ const dateName = (d: Date): string => `${pad2(d.getDate())}${pad2(d.getMonth() +
 const BAND_OPTIONS = BANDS.map((b) => [b, b] as const)
 const MODE_OPTIONS = MODES.map((m) => [m, m] as const)
 
-interface Tile {
-  readonly value: string
-  readonly title: string
-  readonly sub?: string
-}
 
 // The four log profiles (ch. 8). Aktivace carries a sub-line naming its schemes.
 const PROFILE_TILES = (): readonly Tile[] => [
@@ -54,43 +50,6 @@ const SAT_TILES: readonly Tile[] = SATELLITES.map((s) => ({
   title: s.fm ? `${s.label} FM` : s.label,
   sub: `${s.up}↑${s.down}↓`,
 }))
-
-/**
- * On-brand tile picker: a grid of tappable tiles instead of a native <select> — one
- * tap, no full-screen OS dialog. Used for both the profile and the satellite (ch. 8).
- * `value()` returns the selected tile's value; `onChange` fires on each pick.
- */
-function tilePicker(
-  label: string,
-  tiles: readonly Tile[],
-  selected: string,
-  onChange?: () => void,
-): { row: HTMLElement; value: () => string } {
-  const row = el('div', 'field')
-  row.append(el('span', 'field-label', label))
-  const grid = el('div', 'tilegrid')
-  let current = selected
-  const nodes = new Map<string, HTMLButtonElement>()
-  const paint = (): void => {
-    for (const [value, node] of nodes) node.classList.toggle('tile--sel', value === current)
-  }
-  for (const it of tiles) {
-    const node = el('button', 'tile')
-    node.type = 'button'
-    node.append(el('b', 'tile-title', it.title))
-    if (it.sub !== undefined) node.append(el('span', 'tile-sub', it.sub))
-    node.addEventListener('click', () => {
-      current = it.value
-      paint()
-      onChange?.()
-    })
-    nodes.set(it.value, node)
-    grid.append(node)
-  }
-  paint()
-  row.append(grid)
-  return { row, value: () => current }
-}
 
 export class NewLogScreen implements Screen {
   private readonly root = el('form', 'screen screen--form')

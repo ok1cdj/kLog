@@ -10,6 +10,7 @@ import { QsoListScreen } from './screens/qsolist'
 import { QsoEditScreen } from './screens/qsoedit'
 import { SettingsScreen } from './screens/settings'
 import { HelpScreen } from './screens/help'
+import { EdiExportScreen } from './screens/ediexport'
 
 export interface Screen {
   mount(root: HTMLElement): void | Promise<void>
@@ -38,6 +39,7 @@ export class App {
         openLog: (id) => this.showLogging(id),
         newLog: () => this.showNewLog(),
         openSettings: () => this.showSettings(),
+        exportEdi: (id) => this.showEdiExport(id),
       }),
     )
   }
@@ -69,6 +71,10 @@ export class App {
         toHelp: () => this.showHelp(() => this.showLogging(logId)),
       }),
     )
+  }
+
+  showEdiExport(logId: string): void {
+    this.show(new EdiExportScreen(this.platform, logId, { back: () => this.showLogList() }))
   }
 
   showHelp(back: () => void): void {

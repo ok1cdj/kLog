@@ -28,8 +28,12 @@ desktop.
   Wavelog (API v2, Wavelog 3.1+) with one tap in the log list — never automatically;
   duplicates are skipped by Wavelog, so resending is safe. Set up URL + a `wl2_`
   token (scopes `qso:write`, `station:read`) in Settings; no server CORS setup needed.
-- **Phase 3 — later:** full VHF-contest engine (QRB, scoring, EDI/REG1TEST export). The data model and interfaces are already prepared for these.
-  (Satellite QSOs are done; ADIF import is out of scope.)
+- **VHF contest:** IARU R1 scoring (1 point per km, locator centres, each station
+  once per band — a repeat in another mode is a dupe), QRB shown while logging,
+  per-band score + ODX in the QSO list, and **EDI (REG1TEST) export, one file per
+  band** from the log list. Contest name and section are asked at export; station
+  fields (name, e-mail, power, antenna) are remembered. The ADIF log keeps all bands.
+- Satellite QSOs are done; ADIF import is out of scope.
 
 ## How to log
 

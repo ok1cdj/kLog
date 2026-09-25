@@ -250,7 +250,7 @@ Profil se volí při založení logu a nejde ho měnit. Je to čistě data — `
 
 Locator se parsuje **ve všech profilech**. Profil rozhoduje jen o tom, jestli appka upozorní na jeho chybějící hodnotu — a zatím neupozorňuje nikde.
 
-Profil VKV závod (pořadová čísla, bodování, QRB, EDI/REG1TEST export) a import ADIF přijdou později. Parser ani klávesnice se tím nemění.
+Profil VKV závod má bodování podle IARU R1 (kap. 14.1) a export EDI. Import ADIF je mimo rozsah.
 
 ---
 
@@ -376,6 +376,8 @@ Z lokální databáze `call → (locator, name)`, budované **z vlastních před
 
 Po dokončené volačce zkontroluj shodu **call + pásmo + mód** v aktuálním logu. Při shodě invertuj vstupní řádek. Nic neblokuj, jen upozorni.
 
+**VKV závod: call + pásmo, mód se nebere v úvahu** — pravidla IARU R1: každou stanici lze na pásmu udělat jednou, opakované spojení se zapíše, ale boduje 0. Satelit: call + družice.
+
 ---
 
 ## 11. Chování Enteru a času
@@ -467,11 +469,25 @@ Service worker cachuje celou aplikaci při první návštěvě. Na kopci není s
 | Aktivace POTA | ADIF | `POTA_REF`, `MY_POTA_REF` (ADIF 3.1.4+) |
 | Aktivace WWFF | ADIF | `SIG`=WWFF, `SIG_INFO`, `MY_SIG`, `MY_SIG_INFO` |
 | Obecný | ADIF | `NAME`, `QTH`, `COMMENT` |
-| VKV závod (později) | EDI (REG1TEST) + ADIF | |
+| VKV závod | EDI (REG1TEST), **jeden soubor za pásmo** + ADIF (všechna pásma v jednom) | viz 14.1 |
 
 Vždy zapisovat: `CALL`, `QSO_DATE`, `TIME_ON`, `BAND`, `MODE`, `RST_SENT`, `RST_RCVD`, `STATION_CALLSIGN`, `MY_GRIDSQUARE`. Volitelně `GRIDSQUARE`, když je znám.
 
 **Ověřit před implementací:** POTA v posledních letech měnila požadovaná ADIF pole (dřív `SIG`/`MY_SIG`, dnes `POTA_REF`). Zkontrolovat aktuální dokumentaci nahrávače.
+
+### 14.1 VKV závod — bodování a EDI
+
+**Bodování (pravidla IARU R1 pro 50/70 MHz, 145 MHz a UHF/µW, GC 2023):** 1 bod za km. Vzdálenost mezi **středy lokátorů** sférickou geometrií s převodem **111,2 km na stupeň**, oříznutá na celé km **+ 1** (stejný čtverec = 1 bod). Každá stanice jednou na pásmo; duplicita boduje 0. Násobiče (WWL) se nepoužívají — celkové skóre je součet bodů. Ověřeno na vzorovém logu specifikace REG1TEST (JO65FR → IP62OA = 1302 atd.). Kód: `core/locator.ts`, `core/contest.ts`.
+
+**Kde je to vidět:** štítek `QRB` v parse preview, jakmile je znám lokátor protistanice (hlavička zůstává minimální). Seznam QSO: body u každého QSO (`DUPE` u opakování) a řádek za každé pásmo `QSO · body · WWL · ODX`.
+
+**Export EDI (REG1TEST;1, vydání 1.1)** — tlačítko EDI v seznamu logů, jen VKV log (`core/edi.ts`, obrazovka `ediexport.ts`):
+
+- jeden soubor za pásmo (`PBand` z tabulky specifikace: 6m→50 MHz, 4m→70 MHz, 2m→144 MHz, 70cm→432 MHz, 23cm→1,3 GHz, 13cm→2,3 GHz, 3cm→10 GHz); ADIF log zůstává jeden se všemi pásmy
+- formulář při exportu: **závod** — název (TName, výchozí = název logu), kategorie (PSect: SO / SO-LP / MO / MO-LP / 6H), další operátoři (MOpe1, jen MO) — uloží se do hlavičky logu (`APP_KQSO_EDI_*`); **stanice** — jméno, e-mail (RHBBS), výkon (SPowe), anténa (SAnte), vysílač — pamatuje si nastavení
+- povinné podle pravidel: název, kategorie, e-mail, výkon (číslo), anténa; volačka, lokátor a pásmo jsou vždy
+- QSO řádek `YYMMDD;HHMM;CALL;mód;RST;číslo;RST;číslo;;WWL;body;;N;;D` — mód SSB 1, CW 2, FM 6; čísla doplněná nulami na 3; nový velký čtverec `N`; duplicita body 0 + `D`
+- 7bit ASCII (diakritika se odstraní), CRLF, řádky ≤ 75 znaků; `RCall` = domovská volačka bez `/P`
 
 ---
 
@@ -516,9 +532,8 @@ Parser je jádro celé appky, musí mít pokrytí:
 
 ## 18. Otevřené body
 
-- Antialiasing textu na e-inku — Chrome na Androidu ignoruje `-webkit-font-smoothing: none`. Ověřit na reálném displeji, než se finalizuje typografie. Ověřená verze WebView na Kompaktu: **146.0.7680.178**.
+- ~~Antialiasing textu na e-inku~~ — ověřeno na Kompaktu 2026-09-25, text je v pořádku. Ověřená verze WebView na Kompaktu: **146.0.7680.178**.
 - Extrakce shellu do samostatného `kShell` — rozhodnout až ve fázi 2.
-- Import ADIF, QRB, profil VKV závod — později.
 - Detekce formátu reference u exotických případů (GMA, HEMA) — zatím neřešit.
 
 ---

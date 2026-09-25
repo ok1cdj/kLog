@@ -1,7 +1,9 @@
-// QSO list (ch. 15 #4): a table of the log's QSOs, tap a row to edit it.
+// QSO list (ch. 15 #4): a table of the log's QSOs, tap a row to edit it. A VHF-contest
+// log also shows the points per QSO (DUPE for a repeat on the band) and a score line
+// per band on top.
 
-import { readLogFile } from '../../core/index'
-import type { Qso } from '../../core/index'
+import { PROFILES, readLogFile, scoreLog } from '../../core/index'
+import type { BandScore, Qso, ScoredQso } from '../../core/index'
 import type { KQSOPlatform } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
@@ -41,20 +43,30 @@ export class QsoListScreen implements Screen {
       el('b', 'title', `${meta.name} · ${qsos.length} QSO`),
     )
 
+    const bands = PROFILES[meta.profile].contest ? scoreLog(qsos, meta.myGrid) : []
+    const scored = new Map<number, ScoredQso>()
+    for (const b of bands) for (const r of b.rows) scored.set(r.index, r)
+
     const list = el('ul', 'qsolist')
     if (qsos.length === 0) {
       list.append(el('li', 'empty', t('qsolist.empty')))
     } else {
-      qsos.forEach((q, i) => list.append(this.row(q, i)))
+      qsos.forEach((q, i) => list.append(this.row(q, i, scored.get(i))))
     }
-    this.root.replaceChildren(bar, list)
+    this.root.replaceChildren(bar, ...bands.map((b) => el('div', 'qsosum', scoreLine(b))), list)
   }
 
-  private row(q: Qso, index: number): HTMLElement {
+  private row(q: Qso, index: number, s: ScoredQso | undefined): HTMLElement {
     const li = el('li', 'qsorow')
-    li.append(button(formatRow(q), () => this.nav.editQso(index), 'qsorow-open'))
+    const pts = s ? `  ${s.dupe ? t('qsolist.dupe') : s.points}` : ''
+    li.append(button(formatRow(q) + pts, () => this.nav.editQso(index), 'qsorow-open'))
     return li
   }
+}
+
+function scoreLine(b: BandScore): string {
+  const line = t('qsolist.score', { band: b.band, qsos: b.qsos, points: b.points, wwls: b.wwls })
+  return b.odx ? line + t('qsolist.odx', { call: b.odx.call, km: b.odx.km }) : line
 }
 
 function formatRow(q: Qso): string {

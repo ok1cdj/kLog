@@ -76,3 +76,47 @@ export function selectRow(
   row.append(select)
   return { row, select }
 }
+
+/** One tile of a tilePicker: a big title and an optional sub-line. */
+export interface Tile {
+  readonly value: string
+  readonly title: string
+  readonly sub?: string
+}
+
+/**
+ * On-brand tile picker: a grid of tappable tiles instead of a native <select> — one
+ * tap, no full-screen OS dialog. Used for the profile and satellite (ch. 8) and the EDI section.
+ * `value()` returns the selected tile's value; `onChange` fires on each pick.
+ */
+export function tilePicker(
+  label: string,
+  tiles: readonly Tile[],
+  selected: string,
+  onChange?: () => void,
+): { row: HTMLElement; value: () => string } {
+  const row = el('div', 'field')
+  row.append(el('span', 'field-label', label))
+  const grid = el('div', 'tilegrid')
+  let current = selected
+  const nodes = new Map<string, HTMLButtonElement>()
+  const paint = (): void => {
+    for (const [value, node] of nodes) node.classList.toggle('tile--sel', value === current)
+  }
+  for (const it of tiles) {
+    const node = el('button', 'tile')
+    node.type = 'button'
+    node.append(el('b', 'tile-title', it.title))
+    if (it.sub !== undefined) node.append(el('span', 'tile-sub', it.sub))
+    node.addEventListener('click', () => {
+      current = it.value
+      paint()
+      onChange?.()
+    })
+    nodes.set(it.value, node)
+    grid.append(node)
+  }
+  paint()
+  row.append(grid)
+  return { row, value: () => current }
+}

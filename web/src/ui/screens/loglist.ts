@@ -22,6 +22,7 @@ export interface LogListNav {
   openLog(id: string): void
   newLog(): void
   openSettings(): void
+  exportEdi(id: string): void
 }
 
 export class LogListScreen implements Screen {
@@ -67,6 +68,10 @@ export class LogListScreen implements Screen {
     const exp = button(t('loglist.export'), () => void this.platform.exportLog(log.id, `${log.id}.adi`), 'btn btn--small')
     const del = button(t('loglist.delete'), () => void this.remove(log), 'btn btn--small')
     li.append(open, exp)
+    // VHF contest: EDI (REG1TEST) per band for the contest manager (ch. 14).
+    if (PROFILES[log.profile].contest && log.qsoCount > 0) {
+      li.append(button(t('loglist.edi'), () => this.nav.exportEdi(log.id), 'btn btn--small'))
+    }
     // Activations go by mail / program upload, never to Wavelog (ch. 19.2).
     if (wl && PROFILES[log.profile].wavelogPush && log.qsoCount > 0) {
       const push = button(t('wl.push'), () => void this.push(log, wl, push, status), 'btn btn--small')

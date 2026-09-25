@@ -44,6 +44,104 @@ Two layers, never merged into one table (`web/src/core/calldb.ts`):
 - Import in the APK via `onShowFileChooser` in `MainActivity.kt` (SAF `OpenDocument`,
   `*/*` — `.tsv` has no reliable MIME on Android). APK also has `INTERNET` for Wavelog.
 
+## VHF contest — QRB scoring + EDI export (2026-09-25)
+
+**Status: implemented 2026-09-25.** Decisions: plain km scoring (no WWL
+multiplier), contest name/section asked at export, dupe per band (mode ignored,
+IARU), one EDI per band while the ADIF keeps all bands. The "Open questions"
+below are answered accordingly.
+
+What exists: VKV profile (`PROFILES.vkv`) with serial after the call, auto sent
+serial (`sentSerial`, `TX 00n` in the header), own + worked 6-char locator
+mandatory (`requiresGrid`), bundled `vkv.tsv` suggestions, ADIF export, Wavelog
+push. Missing: QRB/points, score, EDI (REG1TEST) — the format contest managers
+actually want (ZADANI ch. 14: "VKV závod | EDI (REG1TEST) + ADIF").
+
+### Scoring rule (verified)
+
+IARU R1 VHF/UHF/µW rules (GC 2023), "Scoring": **1 point per km; distance
+truncated to an integer and +1 km; centre of each locator square; 111.2 km per
+degree, spherical geometry.** Each station once per band; dupes are logged but
+score 0. 111.2 km/° ⇒ R = 111.2·180/π = 6371.29 km.
+
+Checked against the worked example in the REG1TEST spec (OZ1FDJ JO65FR): all
+9 sample QSOs match exactly — JO65ER 6, JO42LT 396, JO55US 48, JO40XL 608,
+JO65FR 1 (same square), IP62OA 1302, KP20LG 891, IO87WI 911, JP70TO 573.
+These become the unit-test vectors.
+
+### Core (pure, tested)
+
+- **`core/locator.ts`** — `gridCenter(loc)` → lat/lon of the 6-char (or 4-char)
+  square centre; `qrbKm(a, b)` (great circle, 111.2 km/°); `qsoPoints(a, b)` =
+  `trunc(km) + 1`.
+- **`core/contest.ts`** — `scoreLog(qsos, meta)` → per QSO `{points, dupe,
+  newWwl}` + totals `{qsos, points, wwls, odx: {call, grid, km}}`, per band.
+  - dupe = same call **on the same band**, mode ignored (IARU: "each station may
+    only be worked once per band"); the first one counts, later ones score 0.
+  - newWwl = first QSO in a large square (4 chars, e.g. JO60) on that band.
+- **`core/edi.ts`** — `writeEdi(meta, qsos, band, header)` → REG1TEST text:
+  - header: `TName, TDate (first;last QSO date), PCall, PWWLo, PExch=, PSect,
+    PBand, RName, RCall, RHBBS, MOpe1, SPowe, SAnte, STXEq, CQSOs=n;1,
+    CQSOP, CWWLs=n;0;1, CWWLB=0, CExcs=0;0;1, CExcB=0, CDXCs=0;0;1, CDXCB=0,
+    CToSc, CODXC=call;wwl;km`, then `[Remarks]` (always present).
+  - `[QSORecords;N]`, one line per QSO:
+    `YYMMDD;HHMM;CALL;mode;sentRST;sentNr;rcvdRST;rcvdNr;;WWL;points;;N?;;D?`
+    — mode code SSB 1, CW 2, FM 6; serials zero-padded to 3; dupe → points 0 + `D`.
+  - 7-bit ASCII only (strip diacritics in free fields), CRLF, lines ≤ 75 chars.
+  - PBand from our band key: 6m→`50 MHz`, 4m→`70 MHz`, 2m→`144 MHz`,
+    70cm→`432 MHz`, 23cm→`1,3 GHz`, 13cm→`2,3 GHz`, 3cm→`10 GHz` (spec table).
+  - **one file per band** (rules: "separately for each frequency band").
+- Minimum header the IARU rules require: PCall+PWWLo, PSect+PBand, RCall (+MOpe
+  for multi-op), RHBBS (e-mail), SPowe, SAnte.
+
+### UI
+
+- **Preview chip `QRB 423`** (km) as soon as the worked locator is known — the
+  one number an operator wants during a contest. Header stays minimal (only
+  `TX 00n` as today).
+- **QSO list**: points column per QSO, summary line on top: `QSO 57 · 12 345 b ·
+  WWL 23 · ODX OK1ABC 612 km`. Dupes marked.
+- **DUPE in VKV** switches to call + band (mode ignored) — same rule as scoring.
+- **EDI export** from the log list (VKV logs only, next to ADIF): a short form,
+  prefilled, one tap per band (`EDI 144 MHz`, `EDI 432 MHz`…):
+  - per contest (stored in the log's ADIF header, `APP_KQSO_EDI_*`): contest
+    name (TName, default = log name), section (tiles `SO` / `MO` / `SO-LP` /
+    `MO-LP` / `6H`), other operators (MOpe1, only for MO).
+  - per station (remembered in settings, filled once): name (RName), e-mail
+    (RHBBS), power W (SPowe), antenna (SAnte), TX (STXEq, optional).
+  - file name `<log>-<band>.edi`, same export path as ADIF (SAF on the APK,
+    download/share on the web).
+
+### Tests
+
+- locator: centre of JN79US / JO60 / edge squares (AR, RA…), invalid input.
+- qrb/points: the 9 REG1TEST sample vectors above; same square = 1.
+- scoring: dupe on the same band scores 0 (first counts), same call on another
+  band counts, SSB→CW of the same station on one band is a dupe; new-WWL flags;
+  ODX; per-band totals.
+- EDI: golden file for a small log; header counts match records; CRLF, ASCII
+  only, ≤ 75 chars; mode codes; one file per band.
+
+### Spec / docs
+
+ZADANI ch. 7 (VKV profile), ch. 10 (DUPE per band in VKV), ch. 14 (EDI row
+filled in), ch. 18 (drop "QRB, profil VKV závod — později"); help (QRB chip,
+EDI export); README.
+
+### Open questions (decide before coding)
+
+1. **Scoring variant.** IARU = sum of km (above). Some contests multiply by the
+   number of large squares (IARU 50/70 MGM: km × WWL, 50 pts in the same large
+   square). Which contests do you run — is plain km enough, or should the log
+   have a scoring choice (`km` / `km × WWL`)?
+2. **Header form** at export (above) — OK, or would you rather set contest name
+   and section at log creation?
+3. **DUPE per band** (mode ignored) in VKV — OK?
+4. **Multi-band log**: one EDI per band from one log (above), or one log per band?
+
+Sources: IARU R1 rules for 50/70 MHz, 145 MHz and UHF/µW contests (GC 2023,
+iaru-r1.org), REG1TEST spec issue 1.1 (IARU R1 Committee C.5, vushf.dk mirror).
+
 ## Satellite QSO (F3)
 
 ### Status — implemented & deployed (2026-09-23)

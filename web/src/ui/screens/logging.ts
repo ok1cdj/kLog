@@ -19,6 +19,7 @@ import {
   emptySuggestions,
   userHeader,
   isDupe,
+  qsoPoints,
   defaultReport,
   applySatellite,
   satelliteByLabel,
@@ -285,14 +286,14 @@ export class LoggingScreen implements Screen {
   private renderLine(): void {
     this.inputEl.replaceChildren(document.createTextNode(this.line), el('span', 'cursor'))
     // DUPE (ch. 10): invert the input line. Satellite dupe keys on call + SAT_NAME
-    // (a station can be re-worked on another bird); otherwise call + band + mode.
+    // (a station can be re-worked on another bird); VHF contest call + band; otherwise call + band + mode.
     const call = this.effectiveCall()
     const s = this.state.sticky
     const dupe =
       call !== undefined &&
       (PROFILES[this.meta.profile].fixedBand
         ? this.qsos.some((q) => q.call.toUpperCase() === call.toUpperCase() && q.satName === s.satName)
-        : isDupe(this.qsos, call, s.band, s.mode))
+        : isDupe(this.qsos, call, s.band, this.dupeMode()))
     this.inputEl.classList.toggle('inputline--dupe', dupe)
   }
 
@@ -320,6 +321,9 @@ export class LoggingScreen implements Screen {
       if (profile.serialAfterCall || profile.fixedBand || p.grid !== undefined) {
         chips.push(fieldChip('LOC', p.grid ?? '—', p.grid === undefined))
       }
+      // VHF contest: the QSO's points (= km + 1, IARU R1) as soon as the locator is known.
+      const qrb = profile.contest && p.grid !== undefined ? qsoPoints(this.meta.myGrid, p.grid) : undefined
+      if (qrb !== undefined) chips.push(fieldChip('QRB', `${qrb} km`))
       if (p.theirRef) chips.push(fieldChip('REF', p.theirRef.value))
       if (p.name) chips.push(fieldChip('NAME', p.name))
     }
@@ -340,7 +344,7 @@ export class LoggingScreen implements Screen {
         this.stripEl.replaceChildren(
           ...hits.map(({ call }) => {
             // Already worked on this band+mode → mark it (inverse), so a dupe stands out.
-            const worked = isDupe(this.qsos, call, this.state.sticky.band, this.state.sticky.mode)
+            const worked = isDupe(this.qsos, call, this.state.sticky.band, this.dupeMode())
             return this.suggestButton(call, () => this.fillCall(call), worked ? 'suggest suggest--worked' : 'suggest')
           }),
         )
@@ -393,6 +397,11 @@ export class LoggingScreen implements Screen {
   private fillGrid(grid: string): void {
     this.state = { ...this.state, partial: { ...this.state.partial, grid } }
     this.renderAll()
+  }
+
+  /** Mode for the dupe check: a VHF contest counts each station once per band, any mode. */
+  private dupeMode(): string | undefined {
+    return PROFILES[this.meta.profile].contest ? undefined : this.state.sticky.mode
   }
 
   private effectiveCall(): string | undefined {

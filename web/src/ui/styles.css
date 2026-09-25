@@ -402,6 +402,28 @@ body {
   flex-wrap: wrap;
 }
 
+/* EDI export form: section headings, one full-width button per band, result line. */
+.form-section {
+  font-size: 0.9rem;
+  margin: 0.6rem 0 0;
+  border-top: var(--border-w) solid var(--line);
+  padding-top: 0.4rem;
+}
+.form-actions--stack {
+  flex-direction: column;
+}
+.form-status {
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+}
+/* QSO list of a VHF contest log: per-band score lines above the rows. */
+.qsosum {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.2rem;
+  border-bottom: var(--border-w) solid var(--line);
+}
+
 /* Tile picker (New Log): on-brand tiles instead of a native <select> — used for
    the profile and the satellite. */
 .tilegrid {

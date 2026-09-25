@@ -65,13 +65,14 @@ export interface LogProfile {
   readonly requiresGrid: boolean // VKV contest: own + worked locator are mandatory (QRB scoring)
   readonly bundledDb: BundledDbId | null // base callsign set for suggestions (calldb.ts); null = live layer only
   readonly wavelogPush: boolean // offer the manual Wavelog push (ch. 19.2); activations go elsewhere
+  readonly contest: boolean // VHF contest: dupe = call + band (any mode), QRB points, EDI export
 }
 
 export const PROFILES: Readonly<Record<ProfileId, LogProfile>> = Object.freeze({
-  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false, requiresGrid: true, bundledDb: 'vkv', wavelogPush: true }),
-  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false, requiresGrid: false, bundledDb: 'awards', wavelogPush: false }),
-  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false, requiresGrid: false, bundledDb: null, wavelogPush: true }),
-  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true, requiresGrid: false, bundledDb: 'sat', wavelogPush: true }),
+  vkv: Object.freeze({ id: 'vkv', serialAfterCall: true, parsesName: false, usesReferences: false, fixedBand: false, requiresGrid: true, bundledDb: 'vkv', wavelogPush: true, contest: true }),
+  aktivace: Object.freeze({ id: 'aktivace', serialAfterCall: false, parsesName: false, usesReferences: true, fixedBand: false, requiresGrid: false, bundledDb: 'awards', wavelogPush: false, contest: false }),
+  obecny: Object.freeze({ id: 'obecny', serialAfterCall: false, parsesName: true, usesReferences: false, fixedBand: false, requiresGrid: false, bundledDb: null, wavelogPush: true, contest: false }),
+  sat: Object.freeze({ id: 'sat', serialAfterCall: false, parsesName: false, usesReferences: false, fixedBand: true, requiresGrid: false, bundledDb: 'sat', wavelogPush: true, contest: false }),
 })
 
 /** Log-creation payload (ch. 8 header + ch. 9.3 sticky "my-*" source). Storage-agnostic. */
@@ -83,6 +84,14 @@ export interface LogMeta {
   readonly myRef?: AwardReference // "Moje reference" — Aktivace only
   readonly defaultSignal: Signal // "Pásmo / mód" — sticky seed (ch. 8)
   readonly satLabel?: string // Satellite: chosen bird (DB label, e.g. "AO-7 A") — one log per pass
+  readonly edi?: EdiContest // VHF contest: filled at the first EDI export, kept for the next one
+}
+
+/** Per-contest EDI header fields (REG1TEST TName / PSect / MOpe1), stored in the log. */
+export interface EdiContest {
+  readonly contest: string // TName
+  readonly section: string // PSect, e.g. SO, MO, SO-LP
+  readonly operators: string // MOpe1 — other operators of a multi-op entry, ; separated
 }
 
 /** Default RST for a mode (ch. 8): 599 on CW, 59 otherwise. Not configurable. */

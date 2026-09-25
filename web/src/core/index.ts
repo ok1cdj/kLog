@@ -10,6 +10,7 @@ export type {
   LogProfile,
   BundledDbId,
   LogMeta,
+  EdiContest,
   StickyState,
   TokenClass,
   ClassifiedToken,
@@ -42,6 +43,11 @@ export type { ParsedLogFile } from './adif/logfile'
 export { emptySuggestions } from './suggest'
 export type { SuggestionSource } from './suggest'
 export { isDupe } from './dupe'
+export { gridCenter, qrbKm, qsoPoints } from './locator'
+export { scoreLog } from './contest'
+export type { BandScore, ScoredQso } from './contest'
+export { writeEdi, ediBand, ediBands, ediAscii } from './edi'
+export type { EdiStation } from './edi'
 export { LiveDb, LIVE_MAX, baseSource, combineSources, dbDate, mergeEntry, parseDb, serializeDb, userHeader } from './calldb'
 export type { Entry, ParsedDb } from './calldb'
 export {

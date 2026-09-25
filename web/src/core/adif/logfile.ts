@@ -18,6 +18,9 @@ const A = {
   DEFBANDRX: 'APP_KQSO_DEFBANDRX',
   DEFMODERX: 'APP_KQSO_DEFMODERX',
   SATLABEL: 'APP_KQSO_SATLABEL',
+  EDI_CONTEST: 'APP_KQSO_EDI_CONTEST',
+  EDI_SECTION: 'APP_KQSO_EDI_SECTION',
+  EDI_OPS: 'APP_KQSO_EDI_OPS',
 } as const
 
 const PROFILE_IDS: readonly ProfileId[] = ['vkv', 'aktivace', 'obecny', 'sat']
@@ -37,6 +40,10 @@ function metaFields(meta: LogMeta): string[] {
   if (s.bandRx !== undefined) out.push(writeField(A.DEFBANDRX, s.bandRx))
   if (s.modeRx !== undefined) out.push(writeField(A.DEFMODERX, s.modeRx))
   if (meta.satLabel !== undefined) out.push(writeField(A.SATLABEL, meta.satLabel))
+  if (meta.edi) {
+    out.push(writeField(A.EDI_CONTEST, meta.edi.contest), writeField(A.EDI_SECTION, meta.edi.section))
+    if (meta.edi.operators) out.push(writeField(A.EDI_OPS, meta.edi.operators))
+  }
   return out
 }
 
@@ -85,6 +92,10 @@ function metaFromHeader(h: Record<string, string>): LogMeta {
   }
   const satLabel = h[A.SATLABEL]
   if (satLabel !== undefined) meta.satLabel = satLabel
+  const ediContest = h[A.EDI_CONTEST]
+  if (ediContest !== undefined) {
+    meta.edi = { contest: ediContest, section: h[A.EDI_SECTION] ?? '', operators: h[A.EDI_OPS] ?? '' }
+  }
   return meta
 }
 
