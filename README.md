@@ -11,7 +11,7 @@ desktop.
 *Formerly kLog — renamed to avoid a clash with KLog by EA4K.*
 
 - **Live web:** <https://kqso.ok1cdj.com/> (web 1.2.0; the old `ok1cdj.github.io/kQSO/` redirects there)
-- **APK:** [GitHub Releases](https://github.com/ok1cdj/kQSO/releases) (1.1)
+- **APK:** [GitHub Releases](https://github.com/ok1cdj/kQSO/releases) (1.2)
 - Spec: [`ZADANI-kQSO.md`](ZADANI-kQSO.md) (Czech) · plan: [`PLAN-kQSO.md`](PLAN-kQSO.md)
 
 ## Features
