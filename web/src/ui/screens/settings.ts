@@ -15,6 +15,7 @@ import { connect } from '../wavelog'
 import { wavelogErrorText } from '../wavelog-text'
 import { t } from '../i18n'
 import { BUNDLED_DB_SETTING, BUNDLED_IDS, bundledInfo } from '../bundled-db'
+import { STATS_SETTING, setStatsEnabled } from '../stats'
 
 export interface SettingsNav {
   back(): void
@@ -60,6 +61,7 @@ export class SettingsScreen implements Screen {
       await this.callDbSetting(),
       await this.wavelogSetting(),
       this.storageSetting(persisted),
+      ...(this.platform.nativeVersion ? [] : [await this.statsSetting()]),
       this.about(),
     )
   }
@@ -238,6 +240,27 @@ export class SettingsScreen implements Screen {
   private helpSetting(): HTMLElement {
     const wrap = el('div', 'setting')
     wrap.append(button(`${t('settings.help')} ›`, () => this.nav.openHelp(), 'btn'))
+    return wrap
+  }
+
+  /** Web only: anonymous usage statistics (stats.ts) on/off, default on. */
+  private async statsSetting(): Promise<HTMLElement> {
+    const wrap = el('div', 'setting')
+    const seg = el('div', 'segmented')
+    const on = (await this.platform.getSetting(STATS_SETTING)) !== '0'
+    const mk = (value: '1' | '0', label: string): HTMLButtonElement => {
+      const b = button(label, () => {
+        void this.platform.setSetting(STATS_SETTING, value)
+        setStatsEnabled(value === '1')
+        for (const x of Array.from(seg.querySelectorAll<HTMLButtonElement>('button'))) {
+          x.setAttribute('aria-pressed', String(x === b))
+        }
+      }, 'btn')
+      b.setAttribute('aria-pressed', String((value === '1') === on))
+      return b
+    }
+    seg.append(mk('1', t('common.yes')), mk('0', t('common.no')))
+    wrap.append(el('span', 'field-label', t('settings.stats')), seg, el('div', 'about', t('settings.statsHint')))
     return wrap
   }
 

@@ -22,6 +22,7 @@ import type { Screen } from '../app'
 import { el, button, fieldError, fieldRow, selectRow, tilePicker } from '../dom'
 import type { Tile } from '../dom'
 import { t } from '../i18n'
+import { trackEvent } from '../stats'
 
 export interface NewLogNav {
   created(id: string): void
@@ -160,6 +161,7 @@ export class NewLogScreen implements Screen {
     await this.platform.setSetting('myGrid', meta.myGrid)
     if (meta.satLabel !== undefined) await this.platform.setSetting('satLabel', meta.satLabel)
     const id = await this.platform.createLog(meta)
+    trackEvent('log-create', { profile: meta.profile })
     this.nav.created(id)
   }
 

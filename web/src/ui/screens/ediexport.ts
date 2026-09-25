@@ -10,6 +10,7 @@ import type { Screen } from '../app'
 import { el, button, fieldError, fieldRow, tilePicker } from '../dom'
 import type { Tile } from '../dom'
 import { t } from '../i18n'
+import { trackEvent } from '../stats'
 
 export interface EdiExportNav {
   back(): void
@@ -149,6 +150,7 @@ export class EdiExportScreen implements Screen {
     }
     const file = `${this.logId}-${band}.edi`
     await this.platform.exportText(writeEdi(this.meta, qsos, band, contest, station), file)
+    trackEvent('export', { format: 'edi', band })
     status.textContent = t('edi.exported', { file })
   }
 }

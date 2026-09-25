@@ -46,6 +46,12 @@ desktop.
 - **E-ink / standard display modes** (the APK starts in e-ink), keep-screen-on while
   logging, EN / CS UI (by the system language).
 
+- **Anonymous usage statistics (web only):** screen views and a few action names
+  (log created with its profile, ADIF/EDI export, Wavelog push) go to a self-hosted
+  Umami (`stats.ok1cdj.com`) by a plain `fetch` — no tracker script, no cookies,
+  never any log content (no calls, locators, QSOs). Off in the APK and in dev;
+  switchable in Settings; dropped when offline.
+
 Out of scope: ADIF import (the flow is log → export → forget).
 
 ## How to log

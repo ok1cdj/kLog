@@ -9,6 +9,7 @@ import type { KQSOPlatform, LogSummary } from '../../platform/index'
 import type { Screen } from '../app'
 import { el, button } from '../dom'
 import { t } from '../i18n'
+import { trackEvent } from '../stats'
 import { pushAdif } from '../wavelog'
 import { pushStatusText, wavelogErrorText } from '../wavelog-text'
 
@@ -65,7 +66,10 @@ export class LogListScreen implements Screen {
     const status = el('small', 'logrow-status', pushed ? pushStatusText(pushed) : '')
     status.hidden = !pushed
     open.append(status)
-    const exp = button(t('loglist.export'), () => void this.platform.exportLog(log.id, `${log.id}.adi`), 'btn btn--small')
+    const exp = button(t('loglist.export'), () => {
+      trackEvent('export', { format: 'adif', profile: log.profile })
+      void this.platform.exportLog(log.id, `${log.id}.adi`)
+    }, 'btn btn--small')
     const del = button(t('loglist.delete'), () => void this.remove(log), 'btn btn--small')
     li.append(open, exp)
     // VHF contest: EDI (REG1TEST) per band for the contest manager (ch. 14).
@@ -104,6 +108,7 @@ export class LogListScreen implements Screen {
     try {
       const { imported, skipped } = await pushAdif(wl.base, wl.token, wl.station.id, await this.platform.readLog(log.id))
       result = { at: new Date().toISOString(), ok: true, imported, skipped }
+      trackEvent('wavelog-push', { profile: log.profile })
       status.textContent = pushStatusText(result)
     } catch (e) {
       result = { at: new Date().toISOString(), ok: false, error: e instanceof WavelogError ? e.kind : 'server' }

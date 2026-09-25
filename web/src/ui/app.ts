@@ -11,6 +11,7 @@ import { QsoEditScreen } from './screens/qsoedit'
 import { SettingsScreen } from './screens/settings'
 import { HelpScreen } from './screens/help'
 import { EdiExportScreen } from './screens/ediexport'
+import { trackScreen } from './stats'
 
 export interface Screen {
   mount(root: HTMLElement): void | Promise<void>
@@ -27,7 +28,9 @@ export class App {
     this.showLogList()
   }
 
-  private show(screen: Screen): void {
+  /** `name` is the anonymous screen name for the web statistics (stats.ts). */
+  private show(screen: Screen, name: string): void {
+    trackScreen(name)
     this.current?.unmount()
     this.current = screen
     void screen.mount(this.root)
@@ -41,6 +44,7 @@ export class App {
         openSettings: () => this.showSettings(),
         exportEdi: (id) => this.showEdiExport(id),
       }),
+      'logs',
     )
   }
 
@@ -50,6 +54,7 @@ export class App {
         back: () => this.showLogList(),
         openHelp: () => this.showHelp(() => this.showSettings()),
       }),
+      'settings',
     )
   }
 
@@ -59,6 +64,7 @@ export class App {
         created: (id) => this.showLogging(id),
         cancel: () => this.showLogList(),
       }),
+      'newlog',
     )
   }
 
@@ -70,15 +76,16 @@ export class App {
         editQso: (index) => this.showQsoEdit(logId, index, () => this.showLogging(logId)),
         toHelp: () => this.showHelp(() => this.showLogging(logId)),
       }),
+      'logging',
     )
   }
 
   showEdiExport(logId: string): void {
-    this.show(new EdiExportScreen(this.platform, logId, { back: () => this.showLogList() }))
+    this.show(new EdiExportScreen(this.platform, logId, { back: () => this.showLogList() }), 'edi')
   }
 
   showHelp(back: () => void): void {
-    this.show(new HelpScreen({ back }))
+    this.show(new HelpScreen({ back }), 'help')
   }
 
   showQsoList(logId: string): void {
@@ -87,6 +94,7 @@ export class App {
         back: () => this.showLogging(logId),
         editQso: (index) => this.showQsoEdit(logId, index, () => this.showQsoList(logId)),
       }),
+      'qsolist',
     )
   }
 
@@ -96,6 +104,7 @@ export class App {
       new QsoEditScreen(this.platform, logId, index, {
         done: back,
       }),
+      'qsoedit',
     )
   }
 }
