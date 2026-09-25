@@ -31,7 +31,7 @@ Suggestions/prefill no longer derive from the logs (logs are "log, export, delet
 Two layers, never merged into one table (`web/src/core/calldb.ts`):
 
 - **base** — bundled read-only TSV per profile (`web/src/db/`: `vkv.tsv` VKV,
-  `awards.tsv` Aktivace, `sat.tsv` Satellite — data pending; Obecný none), inlined
+  `awards.tsv` Aktivace, `sat.tsv` Satellite (LEO); Obecný none), inlined
   via `?raw`. awards keeps the source COUNT so frequent chasers rank first.
 - **live** — `record()` on every commit (call, locator, date, count), one file via
   `platform.readCallDb/writeCallDb` (web `_calldb.tsv`, APK `files/calldb.tsv`);
