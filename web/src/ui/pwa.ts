@@ -7,10 +7,14 @@ export function registerServiceWorker(): void {
   // fight the native bridge). Skip when running inside KQSONative.
   if (window.KQSONative) return
   if (!('serviceWorker' in navigator)) return
-  window.addEventListener('load', () => {
-    // BASE_URL is / in dev and /kQSO/ on Pages — register at the right scope.
+  const register = (): void => {
+    // BASE_URL is the Vite base (/) — register at the app's scope.
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { type: 'module' }).catch(() => {
       /* registration failed (e.g. insecure context) — app still works online */
     })
-  })
+  }
+  // main.ts calls this after an async start-up, usually AFTER 'load' has fired —
+  // a plain load listener then never runs and the app silently loses offline mode.
+  if (document.readyState === 'complete') register()
+  else window.addEventListener('load', register, { once: true })
 }
