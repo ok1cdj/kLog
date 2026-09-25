@@ -264,13 +264,13 @@ Profil         [VKV závod | Aktivace | Obecný]
 Moje volačka   OK1CDJ
 Můj locator    JN79US
 Moje reference OK/ZC/001          ← jen profil Aktivace
-Výchozí report 59
+Výchozí report 59 / 599 (CW)     ← podle módu, nenastavuje se
 Pásmo / mód    40m  SSB           ← výchozí, dál se mění z řádku
 ```
 
 Zakládá se v terénu, na kopci, v rukavicích: **jeden tap z hlavní obrazovky, tři pole k potvrzení.** Ne formulář na celou obrazovku.
 
-Poznámka k výchozímu reportu: `59` je na CW netypické, na fone správně. Pole je editovatelné, výchozí `59`. Případné zavedení `599` pro CW je jedna podmínka na jednom místě — neroztahovat to do parseru.
+Poznámka k výchozímu reportu: odvozuje se z módu — **`599` na CW, `59` jinak** (`defaultReport()` v `core/model.ts`, jedna podmínka na jednom místě, parser o ní neví). V hlavičce logu se nenastavuje; od výchozí hodnoty se liší jen konkrétní QSO: holé číslo = přijatý report, `T##` = vyslaný.
 
 ---
 
@@ -325,7 +325,8 @@ Pořadí pravidel není libovolné, dvě kolize jsou reálné:
 Drží se napříč řádky do explicitní změny:
 
 - pásmo, mód (z řádku)
-- moje volačka, můj locator, moje reference, výchozí report (z hlavičky logu)
+- moje volačka, můj locator, moje reference (z hlavičky logu)
+- výchozí report se odvozuje z aktuálního módu (CW `599`, jinak `59`), není to samostatný sticky údaj
 
 Sticky stav se zobrazuje v horní liště — vždycky musí být vidět, do čeho logeš.
 
@@ -502,7 +503,6 @@ Parser je jádro celé appky, musí mít pokrytí:
 ## 18. Otevřené body
 
 - Antialiasing textu na e-inku — Chrome na Androidu ignoruje `-webkit-font-smoothing: none`. Ověřit na reálném displeji, než se finalizuje typografie. Ověřená verze WebView na Kompaktu: **146.0.7680.178**.
-- Výchozí report `59` vs. `599` pro CW — zatím `59` všude, editovatelné v hlavičce logu.
 - Extrakce shellu do samostatného `kShell` — rozhodnout až ve fázi 2.
 - Import ADIF, QRB, profil VKV závod — později.
 - Detekce formátu reference u exotických případů (GMA, HEMA) — zatím neřešit.
