@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         return res
       } catch (err) {
         // Offline and not cached: for a navigation, serve the cached app shell.
-        // Resolve paths against the SW scope so it works under /kQSO/ on Pages.
+        // Resolve paths against the SW scope, so it works under any base path.
         if (req.mode === 'navigate') {
           const scope = self.registration.scope
           const shell =

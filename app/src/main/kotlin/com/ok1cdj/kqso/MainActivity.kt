@@ -61,10 +61,11 @@ class MainActivity : ComponentActivity() {
         // Debug builds: allow chrome://inspect and forward JS console to logcat.
         if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
 
-        // The web build (base /kQSO/, shared with GitHub Pages) is bundled at
-        // assets/kQSO/; serve the whole assets root so /kQSO/... resolves.
+        // The web build (base /, same as kqso.ok1cdj.com) is bundled at assets/kQSO/;
+        // serve that folder at the root, so /index.html and /assets/... resolve.
+        val assets = WebViewAssetLoader.AssetsPathHandler(this)
         val loader = WebViewAssetLoader.Builder()
-            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
+            .addPathHandler("/") { path -> assets.handle("kQSO/$path") }
             .build()
 
         webView = WebView(this).apply {
@@ -124,7 +125,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         setContentView(webView)
-        webView.loadUrl("https://appassets.androidplatform.net/kQSO/index.html")
+        webView.loadUrl("https://appassets.androidplatform.net/index.html")
     }
 
     fun setKeepScreenOn(on: Boolean) = runOnUiThread {

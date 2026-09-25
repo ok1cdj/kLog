@@ -10,7 +10,7 @@ desktop.
 
 *Formerly kLog — renamed to avoid a clash with KLog by EA4K.*
 
-- **Live web:** <https://ok1cdj.github.io/kQSO/> (web 1.2.0)
+- **Live web:** <https://kqso.ok1cdj.com/> (web 1.2.0; the old `ok1cdj.github.io/kQSO/` redirects there)
 - **APK:** [GitHub Releases](https://github.com/ok1cdj/kQSO/releases) (1.1)
 - Spec: [`ZADANI-kQSO.md`](ZADANI-kQSO.md) (Czech) · plan: [`PLAN-kQSO.md`](PLAN-kQSO.md)
 
@@ -93,7 +93,7 @@ npm ci
 npm test          # the whole core: parser, ADIF, EDI, scoring, calldb, Wavelog… (Vitest)
 npm run typecheck # 4 projects: core / browser / worker / sw
 npm run dev       # dev server at /
-npm run build     # production build to web/dist (base /kQSO/)
+npm run build     # production build to web/dist (base /)
 ```
 
 Layout:
@@ -129,7 +129,8 @@ export JAVA_HOME=/opt/android-studio/jbr
 ## Deploy & release
 
 - **Web:** push to `main` → GitHub Actions (`deploy.yml`: `npm ci`, typecheck, test,
-  build) → `web/dist` deployed to GitHub Pages.
+  build) → `web/dist` deployed to GitHub Pages, custom domain `kqso.ok1cdj.com`
+  (DNS: `CNAME kqso → ok1cdj.github.io`). The build uses base `/`.
 - **APK:** bump `versionCode` / `versionName` in `app/build.gradle.kts`, then push a
   `v*` tag (`git tag v1.2 && git push origin v1.2`) → `release.yml` builds the web,
   signs the release APK and attaches it to a GitHub Release as

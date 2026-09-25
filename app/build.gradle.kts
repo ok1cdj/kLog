@@ -59,9 +59,9 @@ android {
     }
 }
 
-// Copy the built web app (web/dist) into the APK assets before packaging.
-// The web build uses base /kQSO/, matching the WebViewAssetLoader mount point.
-val copyWebAssets = tasks.register<Copy>("copyWebAssets") {
+// Copy the built web app (web/dist) into the APK assets before packaging. Sync, so
+// old hashed bundles don't pile up. MainActivity serves this folder at the root (/).
+val copyWebAssets = tasks.register<Sync>("copyWebAssets") {
     from(rootProject.layout.projectDirectory.dir("web/dist"))
     into(layout.projectDirectory.dir("src/main/assets/kQSO"))
 }

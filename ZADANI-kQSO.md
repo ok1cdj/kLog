@@ -1,6 +1,6 @@
 # ZADANI-kQSO.md
 
-Ham radio deník s jednořádkovým chytrým vstupem. **Webová aplikace** na `apps.ok1cdj.com`, ve druhé fázi zabalená do WebView shellu jako APK.
+Ham radio deník s jednořádkovým chytrým vstupem. **Webová aplikace** na `kqso.ok1cdj.com`, ve druhé fázi zabalená do WebView shellu jako APK.
 
 Cílová zařízení jsou tři a všechna jsou rovnocenná:
 
@@ -77,7 +77,7 @@ Zákaz: jakákoli síťová komunikace za běhu, tracking, analytika, runtime np
 
 GitHub Actions podle `ok1cdj/kRadar`:
 
-- **Fáze 1:** `npm ci && npm test && npm run build` → deploy `web/dist` na `apps.ok1cdj.com`
+- **Fáze 1:** `npm ci && npm test && npm run build` → deploy `web/dist` na GitHub Pages s doménou `kqso.ok1cdj.com`
 - **Fáze 2:** navíc kopie výstupu do `app/src/main/assets/web/`, `gradle assembleRelease`, podpis z keystore v secrets, na tagu `v*` GitHub Release s APK
 
 `local.properties.example`, struktura README stejná jako u ostatních appek rodiny.
