@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- No INTERNET permission: the WebView serves only local assets (offline). -->
+    <!-- The app itself is local assets (offline); INTERNET is only for the optional
+         Wavelog push to the user's own instance. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"

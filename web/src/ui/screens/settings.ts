@@ -124,25 +124,21 @@ export class SettingsScreen implements Screen {
         void this.platform.exportText(live.toText(userHeader(new Date())), `kqso-calldb-${dbDate(new Date())}.tsv`)
       }, 'btn'),
     )
-    // Import is web-only for now: the Android WebView ignores <input type=file>
-    // until the shell implements onShowFileChooser (TODO before v1.1).
-    if (!this.platform.nativeVersion) {
-      const file = el('input')
-      file.type = 'file'
-      file.accept = '.tsv,.txt,text/tab-separated-values,text/plain'
-      file.hidden = true
-      file.addEventListener('change', () => {
-        const f = file.files?.[0]
-        if (!f) return
-        void f.text().then(async (text) => {
-          const n = live.importText(text)
-          await save()
-          status.textContent = t('settings.dbImported', { n })
-          file.value = ''
-        })
+    const file = el('input')
+    file.type = 'file'
+    file.accept = '.tsv,.txt,text/tab-separated-values,text/plain'
+    file.hidden = true
+    file.addEventListener('change', () => {
+      const f = file.files?.[0]
+      if (!f) return
+      void f.text().then(async (text) => {
+        const n = live.importText(text)
+        await save()
+        status.textContent = t('settings.dbImported', { n })
+        file.value = ''
       })
-      actions.append(button(t('settings.dbImport'), () => file.click(), 'btn'), file)
-    }
+    })
+    actions.append(button(t('settings.dbImport'), () => file.click(), 'btn'), file)
     actions.append(
       button(t('common.delete'), () => {
         if (!confirm(t('settings.dbClearConfirm', { n: live.size }))) return

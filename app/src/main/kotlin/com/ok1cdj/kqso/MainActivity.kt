@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.webkit.ConsoleMessage
+import android.webkit.ValueCallback
 import android.webkit.JsResult
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var webView: WebView
     private var pendingExport: String? = null
+    private var pendingChooser: ValueCallback<Array<Uri>>? = null
 
     // System "Save as" dialog (SAF) for exporting a log as a .adi file.
     private val createDocument = registerForActivityResult(
@@ -40,6 +42,16 @@ class MainActivity : ComponentActivity() {
         if (uri != null && content != null) {
             contentResolver.openOutputStream(uri)?.use { it.write(content.toByteArray()) }
         }
+    }
+
+    // System file picker (SAF) for <input type=file> (callsign DB import). All types:
+    // .tsv has no reliable MIME type on Android, the web layer validates the content.
+    private val openDocument = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        // The callback must always be answered (null on cancel), or the input stays dead.
+        pendingChooser?.onReceiveValue(uri?.let { arrayOf(it) })
+        pendingChooser = null
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -76,6 +88,18 @@ class MainActivity : ComponentActivity() {
             webChromeClient = object : WebChromeClient() {
                 override fun onConsoleMessage(m: ConsoleMessage): Boolean {
                     Log.i("kQSOWeb", "${m.messageLevel()} ${m.message()} @${m.sourceId()}:${m.lineNumber()}")
+                    return true
+                }
+
+                // Without this the WebView ignores <input type=file> entirely.
+                override fun onShowFileChooser(
+                    view: WebView?,
+                    callback: ValueCallback<Array<Uri>>,
+                    params: FileChooserParams?,
+                ): Boolean {
+                    pendingChooser?.onReceiveValue(null)
+                    pendingChooser = callback
+                    openDocument.launch(arrayOf("*/*"))
                     return true
                 }
 

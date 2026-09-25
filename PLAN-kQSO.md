@@ -41,8 +41,8 @@ Two layers, never merged into one table (`web/src/core/calldb.ts`):
   count, prefix, alphabet. Name prefill dropped.
 - Settings: bundled on/off (applies on next log open, no restart), set versions,
   own count, Export / Import / Delete.
-- **TODO: Import in the APK** — needs `onShowFileChooser` in `MainActivity.kt`;
-  the button is hidden in the native shell until then.
+- Import in the APK via `onShowFileChooser` in `MainActivity.kt` (SAF `OpenDocument`,
+  `*/*` — `.tsv` has no reliable MIME on Android). APK also has `INTERNET` for Wavelog.
 
 ## Satellite QSO (F3)
 
