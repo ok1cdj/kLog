@@ -2,38 +2,51 @@
 
 A ham radio logger with a single, smart input line. One line recognizes what you
 type — callsign, band/mode, report, serial, locator, award reference — so you can
-log a QSO with almost no taps. A web app first, wrapped in an Android WebView shell
-as an APK for the second phase.
+log a QSO with almost no taps. It runs as a web app (offline PWA) and as an
+Android APK (the same web app in a WebView shell).
 
 Target devices (all first-class): **Mudita Kompakt** (480×800 e-ink), iPad/tablet,
 desktop.
 
 *Formerly kLog — renamed to avoid a clash with KLog by EA4K.*
 
-- **Live web:** <https://ok1cdj.github.io/kQSO/>
-- Spec: [`ZADANI-kQSO.md`](ZADANI-kQSO.md) · plan: [`PLAN-kQSO.md`](PLAN-kQSO.md) (spec in Czech)
+- **Live web:** <https://ok1cdj.github.io/kQSO/> (web 1.2.0)
+- **APK:** [GitHub Releases](https://github.com/ok1cdj/kQSO/releases) (1.1)
+- Spec: [`ZADANI-kQSO.md`](ZADANI-kQSO.md) (Czech) · plan: [`PLAN-kQSO.md`](PLAN-kQSO.md)
 
-## Status
+## Features
 
-- **Phase 1 — web:** complete and deployed. Single-line parser + ADIF, OPFS storage
-  with a crash journal, 6×7 on-screen keyboard (no `<input>`, so no system keyboard),
-  log management, e-ink / standard display modes, offline PWA, EN/CS UI.
-- **Phase 2 — Android shell (`app/`):** complete. WebView + native `KQSONative`
-  bridge (logs as real `.adi` files in app storage, SAF export, `ACTION_SEND` share,
-  keep-screen-on, e-ink hardcoded); signed release APK built by CI on a `v*` tag.
+- **One input line, own 6×7 alphabetical keyboard** (no system keyboard; a hardware
+  keyboard works too). A parse preview under the line shows what will be saved.
+- **Log profiles**, chosen when a log is created:
+  - **Activation** (SOTA / POTA / WWFF) — your reference is set when the log is
+    created; the worked station's reference is logged for S2S.
+  - **General** — adds the name.
+  - **VHF contest** — serials, 6-char locator required, IARU R1 scoring (below).
+  - **Satellite** — one log per pass; the bird (RS-44, SO-50, ISS, QO-100…) is
+    picked at creation and sets uplink/downlink band and `SAT_NAME`.
 - **Callsign database:** suggestions and locator prefill from a bundled set per
   profile (VHF contest / chasers / satellites) plus your own worked stations, kept
-  apart from the logs; export/import (merge) in Settings.
+  apart from the logs; export / import (merge) / delete in Settings.
+- **DUPE warning:** same call + band + mode; VHF contest same call + band (any
+  mode); satellite same call + bird. It only warns, never blocks.
+- **Line commands:** `W` discards the unfinished QSO, `D` deletes the last saved one.
+- **VHF contest scoring:** 1 point per km between locator centres (111.2 km/°,
+  truncated + 1), each station once per band. QRB shows in the preview; the QSO
+  list has points per QSO and a score line per band (QSO · points · WWL · ODX).
+- **Export:** ADIF per log (all bands); VHF contest also **EDI (REG1TEST), one file
+  per band** — contest name/section asked at export, station fields remembered.
 - **Wavelog push:** General, Satellite and VHF-contest logs can be sent to your own
   Wavelog (API v2, Wavelog 3.1+) with one tap in the log list — never automatically;
   duplicates are skipped by Wavelog, so resending is safe. Set up URL + a `wl2_`
   token (scopes `qso:write`, `station:read`) in Settings; no server CORS setup needed.
-- **VHF contest:** IARU R1 scoring (1 point per km, locator centres, each station
-  once per band — a repeat in another mode is a dupe), QRB shown while logging,
-  per-band score + ODX in the QSO list, and **EDI (REG1TEST) export, one file per
-  band** from the log list. Contest name and section are asked at export; station
-  fields (name, e-mail, power, antenna) are remembered. The ADIF log keeps all bands.
-- Satellite QSOs are done; ADIF import is out of scope.
+- **Storage that survives:** every QSO is appended to the log file at once; an
+  unfinished QSO is kept in a crash journal and offered back after a restart.
+  Web: OPFS (persistent storage requested); APK: `.adi` files in app storage.
+- **E-ink / standard display modes** (the APK starts in e-ink), keep-screen-on while
+  logging, EN / CS UI (by the system language).
+
+Out of scope: ADIF import (the flow is log → export → forget).
 
 ## How to log
 
@@ -41,27 +54,28 @@ Type a whole QSO on one line; press Enter to fold parts into the QSO, Enter on a
 empty line to save it. Only the callsign is required.
 
 ```
-40m ssb                    band + mode (sticky)
+40m ssb                    band + mode (sticky until changed)
 OK1ABC                     callsign → saves with defaults
 OK2XYZ OK/ZC/001           worked station + SOTA reference (→ OK/ZC-001)
 DL5ABC 55 JO60UN           received report + locator
+G8AHK/P PETR               name (General profile)
+1832 OK1ABC                HHMM first = manual UTC time
+OK1ABC ⏎ JN79US ⏎ ⏎        fill piece by piece, empty Enter saves
 W                          (alone) discard the unfinished QSO
 D                          (alone) delete the last saved QSO, after a confirm
 ```
 
-The received report is a bare number; the sent report defaults per mode (59 on
-SSB/FM, 599 on CW). In the VHF-contest profile a bare number is the serial
-(`58123` = report 58 + serial 123):
+The received report is a bare number, the sent report is `T57`; both default per
+mode (59 on SSB/FM, 599 on CW). In the VHF-contest profile a bare number is the
+serial (`58123` = report 58 + serial 123):
 
 ```
 2m ssb
 OK1ABC 007 JO60UN          serial + locator → preview shows QRB (points)
 ```
 
-The QSO list shows points and a score per band; the log list has **EDI** (one
-file per band) next to the ADIF export. Satellite logs pick the bird when the log
-is created (one log per pass); the exchange is report + locator. See
-**Settings → How to log** in the app for the full grammar.
+On a satellite log the exchange is report + locator (`9A5Y 59 JN86`); typed band
+tokens are ignored. See **Settings → How to log** in the app for the full grammar.
 
 ## Development
 
@@ -70,7 +84,7 @@ TypeScript + Vite + Vitest, **no runtime dependencies** (static bundle, no CDN).
 ```bash
 cd web
 npm ci
-npm test          # parser core + ADIF (Vitest)
+npm test          # the whole core: parser, ADIF, EDI, scoring, calldb, Wavelog… (Vitest)
 npm run typecheck # 4 projects: core / browser / worker / sw
 npm run dev       # dev server at /
 npm run build     # production build to web/dist (base /kQSO/)
@@ -80,34 +94,44 @@ Layout:
 
 ```
 web/
-├── src/core/       parser, model, ADIF — pure logic, no DOM (Vitest-tested)
-├── src/platform/   the ONLY storage access (OPFS shim; native bridge in phase 2)
+├── src/core/       parser, model, ADIF, EDI, scoring, calldb — pure logic, no DOM
+├── src/db/         bundled callsign sets (vkv / sat / awards TSV)
+├── src/platform/   the ONLY storage access (web: OPFS worker; APK: KQSONative bridge)
 ├── src/theme/      design tokens for e-ink / standard display modes
 ├── src/ui/         screens, keyboard, i18n (en/cs)
-└── src/sw.ts       service worker (offline-first)
-app/                Android WebView shell (Kotlin, AGP 9, compileSdk 37)
+├── src/sw.ts       service worker (offline-first, web only)
+└── tests/          Vitest
+app/                Android WebView shell (Kotlin, AGP 9, minSdk 30, compileSdk 37)
 ```
 
 ### Android shell
 
-`app/` is the Android WebView shell (`com.ok1cdj.kqso`): native storage (logs as
-`.adi` files), SAF export, e-ink mode hardcoded. Local build (needs JDK 17+ and an
-Android SDK via `sdk.dir` in `local.properties`):
+`app/` (`com.ok1cdj.kqso`) serves the bundled web build locally through
+`WebViewAssetLoader`. The `KQSONative` bridge gives native storage (logs as `.adi`
+files), SAF export, the system file picker (callsign DB import) and keep-screen-on;
+`INTERNET` is only for the Wavelog push. Local build needs JDK 17+ with `javac`
+(e.g. Android Studio's JBR) and an Android SDK via `sdk.dir` in `local.properties`:
 
 ```bash
 cd web && npm run build       # web bundle → copied into app assets at build time
-cd .. && ./gradlew :app:assembleDebug
+cd ..
+export JAVA_HOME=/opt/android-studio/jbr
+./gradlew :app:assembleRelease  # signed when local.properties has the signing.* keys
+./gradlew :app:assembleDebug    # debug build (different signature → uninstall first)
 ```
 
 ## Deploy & release
 
-- **Web:** push to `main` → GitHub Actions (`deploy.yml`, `npm ci && npm test &&
-  npm run build`) → `web/dist` deployed to GitHub Pages.
-- **APK:** push a `v*` tag (`git tag v1.1 && git push origin v1.1`) → `release.yml`
-  builds the web, signs the release APK, and attaches it to a GitHub Release as `kqso-<versionName>.apk`.
+- **Web:** push to `main` → GitHub Actions (`deploy.yml`: `npm ci`, typecheck, test,
+  build) → `web/dist` deployed to GitHub Pages.
+- **APK:** bump `versionCode` / `versionName` in `app/build.gradle.kts`, then push a
+  `v*` tag (`git tag v1.2 && git push origin v1.2`) → `release.yml` builds the web,
+  signs the release APK and attaches it to a GitHub Release as
+  `kqso-<versionName>.apk`. It can also be run by hand (`workflow_dispatch`) —
+  that only uploads the APK as a build artifact.
 
-Signing the APK needs **repository secrets** (Settings → Secrets and variables →
-Actions), like the rest of the app family:
+Signing needs **repository secrets** (Settings → Secrets and variables → Actions),
+like the rest of the app family:
 
 | secret | value |
 |---|---|
@@ -118,7 +142,9 @@ Actions), like the rest of the app family:
 
 The keystore (`keystore/kqso.jks`, gitignored, backup outside the repo) was created
 once with the command below — **keep it stable** across releases (otherwise updates
-fail on a signature mismatch):
+fail on a signature mismatch). Locally the same values go into `local.properties`
+as `signing.storeFile`, `signing.storePassword`, `signing.keyAlias`,
+`signing.keyPassword`.
 
 ```bash
 keytool -genkeypair -v -keystore keystore/kqso.jks -alias kqso \
