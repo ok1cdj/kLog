@@ -12,7 +12,7 @@ Cosmetic only, no functional change, **no data migration**:
   not read — only test data existed)
 - new icon (Q with an underscore cursor): web SVG/PNG + maskable + apple-touch;
   Android adaptive icon, black glyph on white (e-ink), monochrome for themed icons
-- keystore file/alias (`klog`) intentionally unchanged
+- release keystore `keystore/kqso.jks`, alias `kqso` (created 2026-09-25 — none existed before)
 - version 1.1 (web + APK)
 
 ## Wavelog push (2026-09-24)

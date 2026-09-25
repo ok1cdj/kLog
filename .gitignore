@@ -9,3 +9,8 @@ build/
 local.properties
 app/src/main/assets/kQSO/
 .kotlin/
+
+# Release signing (keystore lives outside git; CI gets it from secrets)
+keystore/
+*.jks
+*.keystore

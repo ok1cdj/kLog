@@ -5,7 +5,7 @@ name: Release
 # The web is deployed separately on every push to main (deploy.yml).
 #
 # Required repository secrets (Settings -> Secrets and variables -> Actions):
-#   KEYSTORE_BASE64    - `base64 -w0 keystore/klog.jks`
+#   KEYSTORE_BASE64    - `base64 -w0 keystore/kqso.jks`
 #   KEYSTORE_PASSWORD  - store password
 #   KEY_ALIAS          - key alias
 #   KEY_PASSWORD       - key password
@@ -19,8 +19,6 @@ permissions:
 
 jobs:
   release:
-    # Only when the Android module exists — gate on the file, not a version number.
-    if: hashFiles('app/build.gradle.kts') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,8 +52,10 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
+          # An empty secret would give an empty keystore and a confusing Gradle error.
+          if [ -z "$KEYSTORE_BASE64" ]; then echo "::error::KEYSTORE_BASE64 secret is not set"; exit 1; fi
           mkdir -p keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > keystore/klog.jks
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/kqso.jks
 
       - name: Write signing config
         env:
@@ -64,7 +64,7 @@ jobs:
           KEY_PW: ${{ secrets.KEY_PASSWORD }}
         run: |
           {
-            echo "signing.storeFile=keystore/klog.jks"
+            echo "signing.storeFile=keystore/kqso.jks"
             echo "signing.storePassword=${STORE_PW}"
             echo "signing.keyAlias=${KEY_ALIAS}"
             echo "signing.keyPassword=${KEY_PW}"

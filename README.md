@@ -89,23 +89,24 @@ cd .. && ./gradlew :app:assembleDebug
 - **Web:** push to `main` → GitHub Actions (`deploy.yml`, `npm ci && npm test &&
   npm run build`) → `web/dist` deployed to GitHub Pages.
 - **APK:** push a `v*` tag (`git tag v1.1 && git push origin v1.1`) → `release.yml`
-  builds the web, signs the release APK, and attaches it to a GitHub Release as `kqso-<tag>.apk`.
+  builds the web, signs the release APK, and attaches it to a GitHub Release as `kqso-<versionName>.apk`.
 
 Signing the APK needs **repository secrets** (Settings → Secrets and variables →
 Actions), like the rest of the app family:
 
 | secret | value |
 |---|---|
-| `KEYSTORE_BASE64` | `base64 -w0 keystore/klog.jks` |
+| `KEYSTORE_BASE64` | `base64 -w0 keystore/kqso.jks` |
 | `KEYSTORE_PASSWORD` | keystore password |
-| `KEY_ALIAS` | key alias (`klog`) |
+| `KEY_ALIAS` | key alias (`kqso`) |
 | `KEY_PASSWORD` | key password |
 
-Create the keystore once and **keep it stable** across releases (otherwise updates
+The keystore (`keystore/kqso.jks`, gitignored, backup outside the repo) was created
+once with the command below — **keep it stable** across releases (otherwise updates
 fail on a signature mismatch):
 
 ```bash
-keytool -genkeypair -v -keystore keystore/klog.jks -alias klog \
+keytool -genkeypair -v -keystore keystore/kqso.jks -alias kqso \
   -keyalg RSA -keysize 4096 -validity 10000
 ```
 
