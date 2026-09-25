@@ -35,7 +35,7 @@ const EN: readonly Section[] = [
     title: 'Band & mode',
     rows: [
       { code: '40m ssb', text: 'Sets band and mode. They stick until changed and show in the header.' },
-      { text: 'Bands: 160m…23cm. Modes: cw ssb fm.' },
+      { text: 'Bands: 160m…23cm, plus 13cm and 3cm (QO-100). Modes: cw ssb fm.' },
     ],
   },
   {
@@ -87,7 +87,15 @@ const EN: readonly Section[] = [
   {
     title: 'Suggestions & dupes',
     rows: [
-      { text: 'After 2 characters the strip offers matching calls from the callsign database (the bundled list for the log type + stations you have worked). A call already worked on this band+mode shows inverted, and the input line inverts as a dupe warning.' },
+      { text: 'After 2 characters the strip offers matching calls from the callsign database (the bundled list for the log type + stations you have worked). A call already worked shows inverted, and the input line inverts as a dupe warning.' },
+      { text: 'A dupe is the same call on the same band + mode; in a VHF contest on the same band (any mode); on a satellite log on the same satellite.' },
+    ],
+  },
+  {
+    title: 'Satellite',
+    rows: [
+      { text: 'One log per pass: the satellite is picked when you create the log, and it sets the uplink/downlink bands and SAT_NAME. The header shows it.' },
+      { code: '9A5Y 59 JN86', text: 'Exchange = report + locator. On linear birds you can switch ssb/cw; typed band tokens are ignored.' },
     ],
   },
   {
@@ -114,7 +122,7 @@ const CS: readonly Section[] = [
     title: 'Pásmo a mód',
     rows: [
       { code: '40m ssb', text: 'Nastaví pásmo a mód. Drží se, dokud je nezměníš, a jsou vidět v hlavičce.' },
-      { text: 'Pásma: 160m…23cm. Módy: cw ssb fm.' },
+      { text: 'Pásma: 160m…23cm, k tomu 13cm a 3cm (QO-100). Módy: cw ssb fm.' },
     ],
   },
   {
@@ -166,7 +174,15 @@ const CS: readonly Section[] = [
   {
     title: 'Návrhy a duplicity',
     rows: [
-      { text: 'Od 2 znaků strip nabízí volačky z databáze značek (přibalený seznam pro typ logu + stanice, které jsi dělal). Značka už zalogovaná na tomhle pásmu+módu je inverzně a vstupní řádek zčerná jako varování před duplicitou.' },
+      { text: 'Od 2 znaků strip nabízí volačky z databáze značek (přibalený seznam pro typ logu + stanice, které jsi dělal). Už zalogovaná značka je inverzně a vstupní řádek zčerná jako varování před duplicitou.' },
+      { text: 'Duplicita = stejná značka na stejném pásmu + módu; ve VKV závodě na stejném pásmu (mód nerozhoduje); v satelitním logu na stejné družici.' },
+    ],
+  },
+  {
+    title: 'Satelit',
+    rows: [
+      { text: 'Co přelet, to log: družici vybereš při zakládání logu a ta nastaví pásma uplink/downlink i SAT_NAME. Hlavička ji ukazuje.' },
+      { code: '9A5Y 59 JN86', text: 'Předává se report + locator. Na lineárních družicích můžeš přepnout ssb/cw; napsané pásmo se ignoruje.' },
     ],
   },
   {

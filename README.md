@@ -51,8 +51,17 @@ D                          (alone) delete the last saved QSO, after a confirm
 
 The received report is a bare number; the sent report defaults per mode (59 on
 SSB/FM, 599 on CW). In the VHF-contest profile a bare number is the serial
-(`58123` = report 58 + serial 123). See **Settings → How to log** in the app for
-the full grammar.
+(`58123` = report 58 + serial 123):
+
+```
+2m ssb
+OK1ABC 007 JO60UN          serial + locator → preview shows QRB (points)
+```
+
+The QSO list shows points and a score per band; the log list has **EDI** (one
+file per band) next to the ADIF export. Satellite logs pick the bird when the log
+is created (one log per pass); the exchange is report + locator. See
+**Settings → How to log** in the app for the full grammar.
 
 ## Development
 
