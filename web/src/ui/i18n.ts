@@ -118,6 +118,14 @@ const en = {
   'logging.recoverYes': 'recover',
   'logging.recoverNo': 'discard',
   'logging.navLogs': '‹ Logs',
+  'logging.cmdWipe': 'DISCARD QSO',
+  'logging.cmdDeleteLast': 'DELETE LAST',
+  'logging.cmdBlocked': 'FINISH OR W',
+  'logging.wiped': 'Unfinished QSO discarded.',
+  'logging.deleteLastConfirm': 'Delete the last QSO?\n{qso}',
+  'logging.deletedLast': 'Deleted: {qso}',
+  'logging.nothingToDelete': 'The log is empty — nothing to delete.',
+  'logging.deleteLastBlocked': 'Finish the QSO first, or discard it with W.',
 
   'install.text': 'For offline use and data safety: Share → Add to Home Screen.',
 } as const
@@ -232,6 +240,14 @@ const cs: Record<keyof typeof en, string> = {
   'logging.recoverYes': 'obnovit',
   'logging.recoverNo': 'zahodit',
   'logging.navLogs': '‹ Logy',
+  'logging.cmdWipe': 'ZAHODIT QSO',
+  'logging.cmdDeleteLast': 'SMAZAT POSLEDNÍ',
+  'logging.cmdBlocked': 'ZAPIŠ NEBO W',
+  'logging.wiped': 'Rozepsané QSO zahozeno.',
+  'logging.deleteLastConfirm': 'Smazat poslední QSO?\n{qso}',
+  'logging.deletedLast': 'Smazáno: {qso}',
+  'logging.nothingToDelete': 'Log je prázdný — není co smazat.',
+  'logging.deleteLastBlocked': 'Nejdřív QSO zapiš, nebo ho zahoď přes W.',
 
   'install.text': 'Pro offline provoz a jistotu dat: Sdílet → Přidat na plochu.',
 }

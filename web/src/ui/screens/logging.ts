@@ -10,6 +10,9 @@ import {
   initialState,
   writeQso,
   readLogFile,
+  writeLogFile,
+  matchCommand,
+  hasContent,
   LiveDb,
   combineSources,
   dbDate,
@@ -53,6 +56,7 @@ export class LoggingScreen implements Screen {
   private db: SuggestionSource = emptySuggestions
   private live = new LiveDb() // own worked stations; persisted on every commit
   private satLabel = '' // current satellite (Satellite profile only)
+  private notice = '' // one-shot result of a line command (W/D), shown in the strip until the next key
 
   private readonly hdr = el('header', 'hdr')
   private readonly inputEl = el('div', 'inputline')
@@ -130,6 +134,7 @@ export class LoggingScreen implements Screen {
   }
 
   private onKey(a: KeyAction): void {
+    if (a.type !== 'enter') this.notice = ''
     switch (a.type) {
       case 'char':
         this.stampFirstKeystroke()
@@ -156,9 +161,16 @@ export class LoggingScreen implements Screen {
   }
 
   private async commit(): Promise<void> {
+    const hadContent = hasContent(this.state.partial)
     const r = reduce(this.state, { type: 'enter', line: this.line }, this.meta)
     this.state = r.state
     if (r.clearInput) this.line = ''
+
+    if (r.command) {
+      await this.runCommand(r.command, hadContent)
+      this.renderAll()
+      return
+    }
 
     if (r.committed) {
       // VKV contest: stamp the auto-incremented sent serial (STX) at commit time.
@@ -176,6 +188,34 @@ export class LoggingScreen implements Screen {
       await this.platform.writeJournal(this.logId, serialize(this.state.partial))
     }
     this.renderAll()
+  }
+
+  // --- line commands (ch. 9.5) ----------------------------------------------
+
+  private async runCommand(cmd: 'wipe' | 'deleteLast' | 'deleteLastBlocked', hadContent: boolean): Promise<void> {
+    if (cmd === 'deleteLastBlocked') {
+      this.notice = t('logging.deleteLastBlocked')
+      return
+    }
+    // Both leave the accumulator empty → nothing left to recover after a crash.
+    await this.platform.clearJournal(this.logId)
+    this.banner.hidden = true
+    if (cmd === 'wipe') {
+      this.notice = hadContent ? t('logging.wiped') : ''
+      return
+    }
+    const last = this.qsos[this.qsos.length - 1]
+    if (!last) {
+      this.notice = t('logging.nothingToDelete')
+      return
+    }
+    // Deleting a SAVED QSO is the one destructive command → confirm, showing which.
+    if (!confirm(t('logging.deleteLastConfirm', { qso: formatQso(last) }))) return
+    this.qsos.pop()
+    // Same path as the QSO edit screen: rewrite the whole file (ch. 13, rare).
+    await this.platform.rewriteLog(this.logId, writeLogFile(this.meta, this.qsos))
+    this.renderRecent()
+    this.notice = t('logging.deletedLast', { qso: formatQso(last) })
   }
 
   // --- crash-journal recovery (ch. 13) --------------------------------------
@@ -258,6 +298,15 @@ export class LoggingScreen implements Screen {
 
   private renderPreview(): void {
     const profile = PROFILES[this.meta.profile]
+    // A lone W/D: show what Enter will do instead of parsing it (W would be a name).
+    const cmd = matchCommand(this.line)
+    if (cmd) {
+      // D is refused while a QSO is unfinished — say so here, not only after Enter.
+      const blocked = cmd === 'deleteLast' && hasContent(this.state.partial)
+      const what = cmd === 'wipe' ? t('logging.cmdWipe') : blocked ? t('logging.cmdBlocked') : t('logging.cmdDeleteLast')
+      this.previewEl.replaceChildren(fieldChip(this.line.trim(), what, blocked))
+      return
+    }
     // Dry-run the current line onto the accumulated QSO so the preview shows what
     // will actually be SAVED — filled fields, plus (for VKV) the still-missing ones.
     const { partial: p, tokens } = parseLine(this.line, this.state.sticky, this.state.partial, profile)
@@ -279,6 +328,10 @@ export class LoggingScreen implements Screen {
   }
 
   private renderStrip(): void {
+    if (this.notice) {
+      this.stripEl.replaceChildren(document.createTextNode(this.notice))
+      return
+    }
     const frag = this.line.trim()
     // ≥2 chars → callsign suggestions from history (ch. 10).
     if (frag.length >= 2) {

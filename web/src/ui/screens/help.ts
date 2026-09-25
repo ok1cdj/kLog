@@ -68,6 +68,14 @@ const EN: readonly Section[] = [
     ],
   },
   {
+    title: 'Commands',
+    rows: [
+      { text: 'A single letter alone on the line, confirmed with Enter. The preview shows what it will do before you press Enter. Next to other text it is ordinary input.' },
+      { code: 'W ⏎', text: 'Discard the unfinished QSO (call, reports, locator… and its time). Band and mode stay.' },
+      { code: 'D ⏎', text: 'Delete the last saved QSO — asks first and shows which one. Works only when nothing is being typed.' },
+    ],
+  },
+  {
     title: 'Time (always UTC)',
     rows: [
       { text: 'The QSO time is stamped in UTC at your first keystroke.' },
@@ -77,7 +85,7 @@ const EN: readonly Section[] = [
   {
     title: 'Suggestions & dupes',
     rows: [
-      { text: 'After 2 characters the strip offers matching calls from your logs. A call already worked on this band+mode shows inverted, and the input line inverts as a dupe warning.' },
+      { text: 'After 2 characters the strip offers matching calls from the callsign database (the bundled list for the log type + stations you have worked). A call already worked on this band+mode shows inverted, and the input line inverts as a dupe warning.' },
     ],
   },
   {
@@ -137,6 +145,14 @@ const CS: readonly Section[] = [
     ],
   },
   {
+    title: 'Příkazy',
+    rows: [
+      { text: 'Jedno písmeno samotné na řádku, potvrzené Enterem. Náhled ukáže, co udělá, ještě před Enterem. Vedle dalšího textu je to obyčejný vstup.' },
+      { code: 'W ⏎', text: 'Zahodí rozepsané QSO (volačku, reporty, locator… i jeho čas). Pásmo a mód zůstanou.' },
+      { code: 'D ⏎', text: 'Smaže poslední zapsané QSO — nejdřív se zeptá a ukáže které. Jen když nic nepíšeš.' },
+    ],
+  },
+  {
     title: 'Čas (vždy UTC)',
     rows: [
       { text: 'Čas QSO se razí v UTC při prvním stisku klávesy.' },
@@ -146,7 +162,7 @@ const CS: readonly Section[] = [
   {
     title: 'Návrhy a duplicity',
     rows: [
-      { text: 'Od 2 znaků strip nabízí volačky z tvých logů. Značka už zalogovaná na tomhle pásmu+módu je inverzně a vstupní řádek zčerná jako varování před duplicitou.' },
+      { text: 'Od 2 znaků strip nabízí volačky z databáze značek (přibalený seznam pro typ logu + stanice, které jsi dělal). Značka už zalogovaná na tomhle pásmu+módu je inverzně a vstupní řádek zčerná jako varování před duplicitou.' },
     ],
   },
   {

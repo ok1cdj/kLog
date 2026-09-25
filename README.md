@@ -41,6 +41,8 @@ empty line to save it. Only the callsign is required.
 OK1ABC                     callsign → saves with defaults
 OK2XYZ OK/ZC/001           worked station + SOTA reference (→ OK/ZC-001)
 DL5ABC 55 JO60UN           received report + locator
+W                          (alone) discard the unfinished QSO
+D                          (alone) delete the last saved QSO, after a confirm
 ```
 
 The received report is a bare number; the sent report defaults per mode (59 on

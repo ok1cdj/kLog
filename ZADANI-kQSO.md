@@ -338,7 +338,20 @@ OK1ABC ↵ ↵                → 14:32  OK1ABC  59/59  40m SSB
 OK2XYZ OK/ZC/014 ↵ ↵      → S2S, reference protistanice
 DL5ABC 55 JO60UN ↵ ↵      → přijatý report 55 (holé číslo), locator
 G8AHK/P PETR ↵ ↵          → profil Obecný, jméno
+OK1ABC 57 ↵ W ↵           → rozepsané QSO zahozeno
+D ↵                       → po potvrzení smaže poslední zapsané QSO
 ```
+
+### 9.5 Příkazy
+
+Jedno písmeno **samotné na celém řádku**, potvrzené Enterem. Pásmo a mód jsou taky holá slova, ale jsou to hodnoty, které se míchají do řádku; příkaz je akce, proto platí jen jako celý řádek — `OK1ABC W` je obyčejný vstup (v profilu Obecný jméno `W`). Samotné písmeno nemá číslici, takže nikdy není volačka. Příkaz se vyhodnotí **před** parserem (`core/command.ts`); parse preview místo štítků ukáže, co Enter udělá.
+
+| příkaz | akce | podmínky |
+|---|---|---|
+| `W` | zahodí rozepsané QSO — všechna pole, čas začátku i crash journal; pásmo, mód a satelit zůstanou | bez potvrzení (jde o pár tokenů); nic rozepsaného → nic |
+| `D` | smaže poslední **zapsané** QSO (přepis souboru jako při editaci, kap. 13) | potvrzovací dialog s QSO; jen když nic není rozepsané (jinak hláška „zapiš, nebo zahoď přes W"); prázdný log → hláška |
+
+Výsledek se ukáže ve stripu do dalšího stisku klávesy. Další příkazy se přidávají stejným pravidlem: samostatné písmeno na vlastním řádku.
 
 ---
 
@@ -372,6 +385,7 @@ Po dokončené volačce zkontroluj shodu **call + pásmo + mód** v aktuálním 
 1. **Enter s obsahem** → řádek se rozparsuje a přiklopí k rozepsanému QSO, vstup se vyprázdní. Umožňuje doplňovat po částech: `OK1ABC ↵ JN79US ↵ PETR ↵ ↵`.
 2. **Enter na prázdném řádku** → QSO se zapíše, hlavička skočí na nový čas.
 3. **Enter na prázdném, když není nic rozepsaného** → ignoruj. Jinak si zbrklým ťukáním nasypeš prázdná QSO.
+4. **Enter na řádku s příkazem** (`W`, `D`, kap. 9.5) → provede příkaz místo parsování.
 
 Commit vyžaduje **jen volačku**.
 
